@@ -1,6 +1,6 @@
 /**
  * Alphabeto Store Locator Widget
- * Version: 3.0.0 - CEP melhorado, arquivo externo de lojas e botão Fadinhas
+ * Version: 4.0.0 - Versão corrigida com carregamento externo
  */
 
 (function() {
@@ -17,7 +17,7 @@
         config: {
             position: { bottom: '24px', right: '24px' },
             colors: { primary: '#FF6B35', secondary: '#F7931E' },
-            storesUrl: 'https://alphawidget.netlify.app/stores.json' // URL completa do arquivo
+            storesUrl: 'https://alphawidget.netlify.app/stores.json'
         },
 
         // Dados carregados
@@ -60,16 +60,6 @@
             });
         },
 
-        // Carregar lojas de fallback
-        loadFallbackStores: function() {
-            this.stores = [
-                { id: 37, name: "Alphabeto Aliança Shopping", address: "Praça Doutor Augusto Glória, 327 - Centro", city: "São João Nepomuceno", state: "MG", cep: "36680-000", whatsapp: "5532991295904", lat: -21.5388, lng: -43.0089, hours: "Seg-Sáb: 9h-18h | Dom: 9h-14h" },
-                { id: 31, name: "Alphabeto Barra Shopping", address: "Avenida das Américas, 4666 - Barra da Tijuca", city: "Rio de Janeiro", state: "RJ", cep: "22640-102", whatsapp: "5521996628735", lat: -23.0049, lng: -43.3211, hours: "Seg-Sáb: 10h-22h | Dom: 13h-21h" },
-                { id: 6, name: "Alphabeto Morumbi Shopping", address: "Avenida Roque Petroni Júnior, 1089 - Vila Gertrudes", city: "São Paulo", state: "SP", cep: "04707-900", whatsapp: "5511930402110", lat: -23.6224, lng: -46.6993, hours: "Seg-Sáb: 10h-22h | Dom: 14h-20h" }
-            ];
-            this.sacInfo = { name: "Fadinhas do SAC", whatsapp: "5521999999999", message: "Olá! Gostaria de falar com as Fadinhas do SAC da Alphabeto! 🧚‍♀️" };
-        },
-
         // Carregar lojas do arquivo JSON
         loadStores: function(callback) {
             var self = this;
@@ -78,19 +68,10 @@
             xhr.onload = function() {
                 if (xhr.status === 200) {
                     try {
-                        // Verificar se a resposta é JSON
-                        var contentType = xhr.getResponseHeader('content-type');
-                        if (contentType && contentType.indexOf('application/json') === -1) {
-                            console.warn('Resposta não é JSON, usando lojas de fallback');
-                            self.loadFallbackStores();
-                            if (callback) callback();
-                            return;
-                        }
-                        
                         var data = JSON.parse(xhr.responseText);
                         self.stores = data.stores || [];
                         self.sacInfo = data.sac || null;
-                        console.log('Lojas carregadas:', self.stores.length);
+                        console.log('Lojas carregadas com sucesso:', self.stores.length);
                     } catch (e) {
                         console.error('Erro ao parsear JSON:', e);
                         self.loadFallbackStores();
@@ -110,13 +91,23 @@
             xhr.send();
         },
 
+        // Carregar lojas de fallback
+        loadFallbackStores: function() {
+            this.stores = [
+                { id: 37, name: "Alphabeto Aliança Shopping", address: "Praça Doutor Augusto Glória, 327 - Centro", city: "São João Nepomuceno", state: "MG", cep: "36680-000", whatsapp: "5532991295904", lat: -21.5388, lng: -43.0089, hours: "Seg-Sáb: 9h-18h | Dom: 9h-14h" },
+                { id: 31, name: "Alphabeto Barra Shopping", address: "Avenida das Américas, 4666 - Barra da Tijuca", city: "Rio de Janeiro", state: "RJ", cep: "22640-102", whatsapp: "5521996628735", lat: -23.0049, lng: -43.3211, hours: "Seg-Sáb: 10h-22h | Dom: 13h-21h" },
+                { id: 6, name: "Alphabeto Morumbi Shopping", address: "Avenida Roque Petroni Júnior, 1089 - Vila Gertrudes", city: "São Paulo", state: "SP", cep: "04707-900", whatsapp: "5511930402110", lat: -23.6224, lng: -46.6993, hours: "Seg-Sáb: 10h-22h | Dom: 14h-20h" }
+            ];
+            this.sacInfo = { name: "Fadinhas do SAC", whatsapp: "5521999999999", message: "Olá! Gostaria de falar com as Fadinhas do SAC da Alphabeto! 🧚‍♀️" };
+        },
+
         // Estilos CSS
         injectStyles: function() {
             var styles = [
                 '.alphabeto-widget-wrapper * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }',
                 '.alphabeto-widget-button { position: fixed; width: 64px; height: 64px; border-radius: 50%; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%); border: none; cursor: pointer; z-index: 999999; }',
                 '.alphabeto-widget-button:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); }',
-                '.alphabeto-widget-button svg { width: 32px; height: 32px; fill: white; }',
+                '.alphabeto-widget-button svg { width: 32px; height: 32px; }',
                 '.alphabeto-widget-pulse { position: absolute; top: -4px; right: -4px; width: 12px; height: 12px; background: #22c55e; border-radius: 50%; animation: alphabeto-pulse 2s infinite; }',
                 '@keyframes alphabeto-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }',
                 '.alphabeto-widget-modal { position: fixed; right: 0; top: 0; height: 100%; width: 100%; max-width: 400px; background: white; box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1); z-index: 999999; transition: transform 0.3s ease; transform: translateX(100%); display: flex; flex-direction: column; }',
@@ -133,7 +124,8 @@
                 '.alphabeto-widget-btn:disabled { opacity: 0.5; cursor: not-allowed; }',
                 '.alphabeto-widget-btn-secondary { background: white; color: #FF6B35; border: 2px solid #FF6B35; }',
                 '.alphabeto-widget-btn-secondary:hover { background: #fff7ed; }',
-                '.alphabeto-widget-btn-sac { background: linear-gradient(to right, #8B5CF6, #EC4899); margin-top: 16px; }',
+                '.alphabeto-widget-btn-sac { background: white; color: #8B5CF6; padding: 12px 20px; border-radius: 12px; font-weight: 600; transition: all 0.2s ease; border: 2px solid #E9D5FF; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }',
+                '.alphabeto-widget-btn-sac:hover { background: #FAF5FF; border-color: #C084FC; transform: translateY(-1px); }',
                 '.alphabeto-widget-store { border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; background: white; position: relative; }',
                 '.alphabeto-widget-store:hover { background: #f9fafb; border-color: #d1d5db; }',
                 '.alphabeto-widget-store.featured { border: 2px solid #FF6B35; background: #fff7ed; }',
@@ -169,7 +161,7 @@
             button.id = 'alphabeto-widget-toggle';
             button.style.bottom = this.config.position.bottom;
             button.style.right = this.config.position.right;
-            button.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3 21h18M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4M5 21V10.85M19 21V10.85"/></svg><div class="alphabeto-widget-pulse"></div>';
+            button.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M3 21h18M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4M5 21V10.85M19 21V10.85"/></svg><div class="alphabeto-widget-pulse"></div>';
             
             // Modal
             var modal = document.createElement('div');
@@ -220,10 +212,13 @@
             
             // Botão das Fadinhas
             if (this.sacInfo) {
-                html += '<div class="alphabeto-widget-divider"></div>';
-                html += '<button class="alphabeto-widget-btn alphabeto-widget-btn-sac" id="alphabeto-widget-sac">';
-                html += '🧚‍♀️ Falar com as Fadinhas do SAC';
+                html += '<div style="margin-top: 40px; padding: 20px; background: #FAF5FF; border-radius: 12px; border: 1px solid #E9D5FF;">';
+                html += '<p style="font-size: 13px; color: #7C3AED; text-align: center; margin-bottom: 12px; font-weight: 500;">💬 Precisa de ajuda ou tem alguma dúvida?</p>';
+                html += '<button class="alphabeto-widget-btn-sac" id="alphabeto-widget-sac">';
+                html += '<span style="font-size: 18px;">🧚‍♀️</span>';
+                html += 'Falar com as Fadinhas do SAC';
                 html += '</button>';
+                html += '</div>';
             }
             
             // Todas as lojas
@@ -246,7 +241,6 @@
 
         // Formatar CEP
         formatCEP: function(cep) {
-            // Remove tudo que não é número
             return cep.replace(/\D/g, '');
         },
 
@@ -265,14 +259,11 @@
                 return;
             }
             
-            // Mostrar loading
             document.getElementById('alphabeto-widget-content').innerHTML = this.renderLoading();
             
-            // Verificar se é CEP
             if (this.isCEP(address)) {
                 var cepFormatted = this.formatCEP(address);
                 
-                // Buscar via ViaCEP primeiro
                 var viacepUrl = 'https://viacep.com.br/ws/' + cepFormatted + '/json/';
                 var xhr = new XMLHttpRequest();
                 xhr.open('GET', viacepUrl, true);
@@ -281,11 +272,9 @@
                         try {
                             var data = JSON.parse(xhr.responseText);
                             if (!data.erro) {
-                                // Usar cidade e estado do ViaCEP para geocoding
                                 var searchAddress = data.logradouro + ', ' + data.localidade + ', ' + data.uf + ', Brasil';
                                 self.geocodeAddress(searchAddress);
                             } else {
-                                // CEP não encontrado, tentar geocoding direto
                                 self.geocodeAddress(address + ', Brasil');
                             }
                         } catch (e) {
@@ -300,7 +289,6 @@
                 };
                 xhr.send();
             } else {
-                // Não é CEP, fazer geocoding normal
                 this.geocodeAddress(address + ', Brasil');
             }
         },
@@ -502,7 +490,6 @@
                 };
             }
             
-            // Botão SAC
             var sacBtn = document.getElementById('alphabeto-widget-sac');
             if (sacBtn && self.sacInfo) {
                 sacBtn.onclick = function() {
