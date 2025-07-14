@@ -1,10 +1,14 @@
 /**
  * Alphabeto Store Locator Widget
- * Version: 5.0.0 - Dados incorporados para evitar CORS
+ * Version: 5.0.1 - Com versionamento e visual atualizado
  */
 
 (function() {
     'use strict';
+    
+    // Versão do widget
+    var WIDGET_VERSION = '5.0.1';
+    console.log('Alphabeto Widget Version:', WIDGET_VERSION);
 
     // Verificar se o widget já foi carregado
     if (window.AlphabetoWidget) {
@@ -14,6 +18,7 @@
 
     // Namespace do widget
     window.AlphabetoWidget = {
+        version: WIDGET_VERSION,
         config: {
             position: { bottom: '24px', right: '24px' },
             colors: { primary: '#FF6B35', secondary: '#F7931E' },
