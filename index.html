@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alphabeto Store Locator Widget</title>
+    <title>Alphabeto Store Locator - Encontre a loja mais próxima</title>
+    <meta name="description" content="Encontre a loja Alphabeto mais próxima de você. Mais de 50 lojas em todo Brasil.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>👶</text></svg>">
     
     <!-- React e React DOM via CDN -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -12,79 +16,296 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        /* Estilos customizados para o widget */
-        .alphabeto-widget-container {
-            position: fixed;
-            z-index: 999999;
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
         
+        /* Scrollbar customizada */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #FF6B35;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #F7931E;
+        }
+        
+        /* Botão flutuante */
         .alphabeto-widget-button {
             position: fixed;
             bottom: 24px;
             right: 24px;
             z-index: 999999;
-            width: 64px;
-            height: 64px;
+            width: 72px;
+            height: 72px;
             border-radius: 50%;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 24px rgba(255, 107, 53, 0.25);
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
             border: none;
             cursor: pointer;
+            overflow: hidden;
         }
         
         .alphabeto-widget-button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            transform: scale(1.1) translateY(-2px);
+            box-shadow: 0 12px 32px rgba(255, 107, 53, 0.35);
         }
         
+        .alphabeto-widget-button:active {
+            transform: scale(1.05);
+        }
+        
+        /* Modal responsivo */
         .alphabeto-widget-modal {
             position: fixed;
             right: 0;
             top: 0;
             height: 100%;
             width: 100%;
-            max-width: 384px;
-            background: white;
-            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 420px;
+            background: #FAFAFA;
+            box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
             z-index: 999999;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
         
         .alphabeto-widget-modal.closed {
             transform: translateX(100%);
         }
         
+        /* Overlay */
         .alphabeto-widget-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
             z-index: 999998;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            backdrop-filter: blur(4px);
         }
         
-        @media (max-width: 640px) {
-            .alphabeto-widget-modal {
-                max-width: 100%;
-            }
+        .alphabeto-widget-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
         }
         
+        /* Animações */
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
         
+        @keyframes pulse {
+            0%, 100% { 
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% { 
+                opacity: 0.8;
+                transform: scale(1.1);
+            }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Spinner */
         .spinner {
-            border: 3px solid #f3f4f6;
+            border: 3px solid #FFE5DB;
             border-top: 3px solid #FF6B35;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 48px;
+            height: 48px;
             animation: spin 1s linear infinite;
+        }
+        
+        /* Cards de loja */
+        .store-card {
+            border: 2px solid #F3F4F6;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .store-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            border-color: #FFE5DB;
+        }
+        
+        .store-card.featured {
+            border-color: #FF6B35;
+            background: linear-gradient(135deg, #FFF7F3 0%, #FFEDE6 100%);
+            box-shadow: 0 4px 16px rgba(255, 107, 53, 0.1);
+        }
+        
+        /* Botões */
+        .btn-primary {
+            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.25);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #FF6B35;
+            border: 2px solid #FF6B35;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        
+        .btn-secondary:hover {
+            background: #FFF7F3;
+            transform: translateY(-1px);
+        }
+        
+        .btn-sac {
+            background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+        
+        .btn-sac:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.25);
+        }
+        
+        /* Input */
+        .search-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #E5E7EB;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            background: white;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #FF6B35;
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+        
+        /* Responsividade */
+        @media (max-width: 640px) {
+            .alphabeto-widget-modal {
+                max-width: 100%;
+            }
+            
+            .alphabeto-widget-button {
+                width: 64px;
+                height: 64px;
+                bottom: 20px;
+                right: 20px;
+            }
+        }
+        
+        @media (max-width: 375px) {
+            .alphabeto-widget-modal {
+                font-size: 14px;
+            }
+            
+            .btn-primary, .btn-secondary, .btn-sac {
+                font-size: 14px;
+                padding: 12px 20px;
+            }
+        }
+        
+        /* Badge animado */
+        .pulse-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 14px;
+            height: 14px;
+            background: #22c55e;
+            border: 2px solid white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        /* Divider */
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #E5E7EB, transparent);
+            margin: 24px 0;
+        }
+        
+        /* Transições suaves */
+        .fade-enter {
+            animation: slideUp 0.3s ease-out;
         }
     </style>
 </head>
@@ -130,7 +351,7 @@
 
             // Calcular distância entre duas coordenadas
             const calculateDistance = (lat1, lng1, lat2, lng2) => {
-                const R = 6371; // Raio da Terra em km
+                const R = 6371;
                 const dLat = (lat2 - lat1) * Math.PI / 180;
                 const dLng = (lng2 - lng1) * Math.PI / 180;
                 const a = 
@@ -243,7 +464,6 @@
                 try {
                     let searchAddress = addressInput;
                     
-                    // Se for CEP, buscar endereço completo
                     if (isCEP(addressInput)) {
                         const cepFormatted = formatCEP(addressInput);
                         const viacepAddress = await searchViaCEP(cepFormatted);
@@ -326,231 +546,286 @@
                         className="alphabeto-widget-button"
                         aria-label="Encontrar loja Alphabeto"
                     >
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
                             <path d="M3 21h18M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4M5 21V10.85M19 21V10.85"/>
                         </svg>
-                        <div style={{
-                            position: 'absolute',
-                            top: '-4px',
-                            right: '-4px',
-                            width: '12px',
-                            height: '12px',
-                            background: '#22c55e',
-                            borderRadius: '50%',
-                            animation: 'pulse 2s infinite'
-                        }}></div>
+                        <div className="pulse-badge"></div>
                     </button>
 
                     {/* Modal */}
                     <div className={`alphabeto-widget-modal ${!isOpen ? 'closed' : ''}`}>
                         {/* Header */}
                         <div style={{
-                            background: 'linear-gradient(to right, #FF6B35, #F7931E)',
+                            background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)',
                             color: 'white',
-                            padding: '16px',
+                            padding: '20px 24px',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'space-between'
+                            justifyContent: 'space-between',
+                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
                         }}>
-                            <h2 style={{ fontSize: '20px', fontWeight: 'bold' }}>Lojas Alphabeto</h2>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                <img 
+                                    src="https://www.alphabeto.com/live/invoke/website/loaders/image.ts?src=https%3A%2F%2Fdeco-sites-assets.s3.sa-east-1.amazonaws.com%2Falphabeto%2Fe30a75c7-a480-4ecb-828e-e76c39805c71%2Fsvgviewer-output-%2821%29.svg&fit=cover&width=120&height=36"
+                                    alt="Alphabeto"
+                                    style={{ 
+                                        height: '32px',
+                                        filter: 'brightness(0) invert(1)'
+                                    }}
+                                />
+                                <span style={{ fontSize: '18px', fontWeight: '600', opacity: 0.9 }}>Lojas</span>
+                            </div>
                             <button
                                 onClick={() => setIsOpen(false)}
                                 style={{
-                                    background: 'none',
+                                    background: 'rgba(255, 255, 255, 0.2)',
                                     border: 'none',
                                     color: 'white',
                                     cursor: 'pointer',
-                                    padding: '4px',
-                                    fontSize: '24px'
+                                    width: '36px',
+                                    height: '36px',
+                                    borderRadius: '8px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '20px',
+                                    transition: 'all 0.2s ease'
                                 }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'}
                             >
                                 ✕
                             </button>
                         </div>
 
                         {/* Conteúdo */}
-                        <div style={{ height: 'calc(100% - 64px)', overflowY: 'auto', padding: '24px' }}>
+                        <div style={{ 
+                            flex: 1,
+                            overflowY: 'auto', 
+                            padding: '24px',
+                            background: '#FAFAFA'
+                        }}>
                             {!storesLoaded ? (
-                                <div style={{ textAlign: 'center', padding: '40px' }}>
+                                <div style={{ textAlign: 'center', padding: '60px 20px' }} className="fade-enter">
                                     <div className="spinner" style={{ margin: '0 auto' }}></div>
-                                    <p style={{ marginTop: '16px', color: '#6b7280' }}>
+                                    <p style={{ marginTop: '24px', color: '#6B7280', fontSize: '16px' }}>
                                         Carregando lojas...
                                     </p>
                                 </div>
                             ) : currentView === 'loading' ? (
-                                <div style={{ textAlign: 'center', padding: '40px' }}>
+                                <div style={{ textAlign: 'center', padding: '60px 20px' }} className="fade-enter">
                                     <div className="spinner" style={{ margin: '0 auto' }}></div>
-                                    <p style={{ marginTop: '16px', color: '#6b7280' }}>
+                                    <p style={{ marginTop: '24px', color: '#6B7280', fontSize: '16px' }}>
                                         Buscando lojas próximas...
                                     </p>
                                 </div>
                             ) : currentView === 'menu' ? (
-                                <>
-                                    <h3 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '24px' }}>
-                                        Encontre a loja mais próxima
-                                    </h3>
+                                <div className="fade-enter">
+                                    {/* Título */}
+                                    <div style={{ marginBottom: '32px', textAlign: 'center' }}>
+                                        <h3 style={{ 
+                                            fontSize: '24px', 
+                                            fontWeight: '700', 
+                                            color: '#1F2937',
+                                            marginBottom: '8px'
+                                        }}>
+                                            Encontre a loja mais próxima
+                                        </h3>
+                                        <p style={{ color: '#6B7280', fontSize: '14px' }}>
+                                            Mais de {allStores.length} lojas em todo Brasil
+                                        </p>
+                                    </div>
                                     
                                     {/* Botão de geolocalização */}
                                     <button
                                         onClick={useCurrentLocation}
-                                        style={{
-                                            width: '100%',
-                                            padding: '14px',
-                                            background: 'linear-gradient(to right, #FF6B35, #F7931E)',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '8px',
-                                            fontSize: '16px',
-                                            fontWeight: 'bold',
-                                            cursor: 'pointer',
-                                            marginBottom: '12px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: '8px'
-                                        }}
+                                        className="btn-primary"
+                                        style={{ marginBottom: '16px' }}
                                     >
-                                        📍 Usar minha localização atual
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                                            <circle cx="12" cy="9" r="3"/>
+                                        </svg>
+                                        Usar minha localização atual
                                     </button>
 
-                                    <div style={{ textAlign: 'center', margin: '16px 0', color: '#6b7280' }}>
-                                        ou
+                                    <div style={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        gap: '12px',
+                                        margin: '20px 0',
+                                        color: '#9CA3AF'
+                                    }}>
+                                        <div style={{ flex: 1, height: '1px', background: '#E5E7EB' }}></div>
+                                        <span style={{ fontSize: '14px', fontWeight: '500' }}>ou</span>
+                                        <div style={{ flex: 1, height: '1px', background: '#E5E7EB' }}></div>
                                     </div>
                                     
                                     {/* Campo de busca */}
-                                    <input
-                                        type="text"
-                                        placeholder="Digite sua cidade, CEP ou endereço..."
-                                        value={addressInput}
-                                        onChange={(e) => setAddressInput(e.target.value)}
-                                        onKeyPress={(e) => e.key === 'Enter' && findNearbyStores()}
-                                        style={{
-                                            width: '100%',
-                                            padding: '12px',
-                                            border: '2px solid #fed7aa',
-                                            borderRadius: '8px',
-                                            marginBottom: '12px',
-                                            fontSize: '16px'
-                                        }}
-                                    />
-                                    
-                                    <button
-                                        onClick={findNearbyStores}
-                                        disabled={isLoading}
-                                        style={{
-                                            width: '100%',
-                                            padding: '12px',
-                                            background: 'white',
-                                            color: '#FF6B35',
-                                            border: '2px solid #FF6B35',
-                                            borderRadius: '8px',
-                                            fontSize: '16px',
-                                            fontWeight: 'bold',
-                                            cursor: isLoading ? 'not-allowed' : 'pointer',
-                                            opacity: isLoading ? 0.5 : 1
-                                        }}
-                                    >
-                                        🔍 Buscar lojas
-                                    </button>
+                                    <div style={{ marginBottom: '32px' }}>
+                                        <input
+                                            type="text"
+                                            placeholder="Digite sua cidade, CEP ou endereço..."
+                                            value={addressInput}
+                                            onChange={(e) => setAddressInput(e.target.value)}
+                                            onKeyPress={(e) => e.key === 'Enter' && findNearbyStores()}
+                                            className="search-input"
+                                            style={{ marginBottom: '12px' }}
+                                        />
+                                        
+                                        <button
+                                            onClick={findNearbyStores}
+                                            disabled={isLoading}
+                                            className="btn-secondary"
+                                        >
+                                            🔍 Buscar lojas
+                                        </button>
+                                    </div>
 
                                     {/* Botão das Fadinhas */}
                                     {sacInfo && (
                                         <>
-                                            <div style={{ height: '1px', background: '#e5e7eb', margin: '24px 0' }}></div>
+                                            <div className="divider"></div>
                                             <button
                                                 onClick={openSACWhatsApp}
-                                                style={{
-                                                    width: '100%',
-                                                    padding: '14px',
-                                                    background: 'linear-gradient(to right, #8B5CF6, #EC4899)',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    borderRadius: '8px',
-                                                    fontSize: '16px',
-                                                    fontWeight: 'bold',
-                                                    cursor: 'pointer',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    gap: '8px'
-                                                }}
+                                                className="btn-sac"
                                             >
-                                                🧚‍♀️ Falar com as Fadinhas do SAC
+                                                <span style={{ fontSize: '20px' }}>🧚‍♀️</span>
+                                                Falar com as Fadinhas do SAC
                                             </button>
+                                            <div className="divider"></div>
                                         </>
                                     )}
 
                                     {/* Lista de todas as lojas */}
-                                    <div style={{ marginTop: '32px' }}>
-                                        <h4 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '16px' }}>
-                                            Todas as lojas
+                                    <div>
+                                        <h4 style={{ 
+                                            fontSize: '18px', 
+                                            fontWeight: '600', 
+                                            marginBottom: '20px',
+                                            color: '#374151'
+                                        }}>
+                                            Nossas lojas
                                         </h4>
                                         {allStores.slice(0, 10).map((store) => (
                                             <div
                                                 key={store.id}
                                                 onClick={() => openWhatsApp(store)}
-                                                style={{
-                                                    border: '1px solid #e5e7eb',
-                                                    borderRadius: '8px',
-                                                    padding: '16px',
-                                                    marginBottom: '12px',
-                                                    cursor: 'pointer',
-                                                    transition: 'background 0.2s'
-                                                }}
-                                                onMouseEnter={(e) => e.currentTarget.style.background = '#f9fafb'}
-                                                onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+                                                className="store-card"
                                             >
-                                                <h5 style={{ fontWeight: 'bold', marginBottom: '4px' }}>{store.name}</h5>
-                                                <p style={{ fontSize: '14px', color: '#6b7280' }}>
-                                                    {store.city}, {store.state}
-                                                </p>
-                                                <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>
-                                                    {store.address}
-                                                </p>
-                                                {store.cep && (
-                                                    <p style={{ fontSize: '11px', color: '#9ca3af', marginTop: '2px' }}>
-                                                        CEP: {store.cep}
-                                                    </p>
-                                                )}
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                                                    <div style={{ flex: 1 }}>
+                                                        <h5 style={{ 
+                                                            fontWeight: '600', 
+                                                            marginBottom: '6px',
+                                                            color: '#1F2937',
+                                                            fontSize: '16px'
+                                                        }}>
+                                                            {store.name}
+                                                        </h5>
+                                                        <p style={{ 
+                                                            fontSize: '14px', 
+                                                            color: '#6B7280',
+                                                            marginBottom: '4px'
+                                                        }}>
+                                                            📍 {store.city}, {store.state}
+                                                        </p>
+                                                        <p style={{ 
+                                                            fontSize: '13px', 
+                                                            color: '#9CA3AF'
+                                                        }}>
+                                                            {store.address}
+                                                        </p>
+                                                        {store.cep && (
+                                                            <p style={{ 
+                                                                fontSize: '12px', 
+                                                                color: '#9CA3AF', 
+                                                                marginTop: '4px' 
+                                                            }}>
+                                                                CEP: {store.cep}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    <div style={{ 
+                                                        color: '#22C55E',
+                                                        fontSize: '24px'
+                                                    }}>
+                                                        💬
+                                                    </div>
+                                                </div>
                                             </div>
                                         ))}
+                                        
+                                        {allStores.length > 10 && (
+                                            <p style={{ 
+                                                textAlign: 'center', 
+                                                color: '#9CA3AF', 
+                                                fontSize: '14px',
+                                                marginTop: '20px'
+                                            }}>
+                                                Mostrando 10 de {allStores.length} lojas
+                                            </p>
+                                        )}
                                     </div>
-                                </>
+                                </div>
                             ) : (
-                                <>
+                                <div className="fade-enter">
                                     {/* Resultados */}
                                     <button
                                         onClick={() => setCurrentView('menu')}
                                         style={{
                                             color: '#FF6B35',
-                                            fontWeight: 'bold',
-                                            marginBottom: '16px',
+                                            fontWeight: '600',
+                                            marginBottom: '24px',
                                             background: 'none',
                                             border: 'none',
                                             cursor: 'pointer',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            gap: '4px'
+                                            gap: '8px',
+                                            fontSize: '16px',
+                                            padding: '0'
                                         }}
                                     >
-                                        ← Voltar
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M19 12H5M12 19l-7-7 7-7"/>
+                                        </svg>
+                                        Voltar
                                     </button>
                                     
-                                    <h3 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '8px' }}>
-                                        Lojas encontradas
-                                    </h3>
-                                    <p style={{ color: '#6b7280', marginBottom: '24px' }}>
-                                        Ordenadas por proximidade
-                                    </p>
+                                    <div style={{ marginBottom: '24px' }}>
+                                        <h3 style={{ 
+                                            fontSize: '24px', 
+                                            fontWeight: '700', 
+                                            marginBottom: '8px',
+                                            color: '#1F2937'
+                                        }}>
+                                            Lojas encontradas
+                                        </h3>
+                                        <p style={{ color: '#6B7280', fontSize: '14px' }}>
+                                            {nearbyStores.length} {nearbyStores.length === 1 ? 'loja encontrada' : 'lojas encontradas'}, ordenadas por proximidade
+                                        </p>
+                                    </div>
                                     
                                     {nearbyStores.length === 0 ? (
-                                        <div style={{ textAlign: 'center', padding: '40px' }}>
-                                            <p style={{ fontSize: '48px', marginBottom: '16px' }}>😔</p>
-                                            <h3 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '8px' }}>
+                                        <div style={{ 
+                                            textAlign: 'center', 
+                                            padding: '60px 20px',
+                                            background: 'white',
+                                            borderRadius: '16px',
+                                            border: '2px dashed #E5E7EB'
+                                        }}>
+                                            <div style={{ fontSize: '64px', marginBottom: '20px' }}>🔍</div>
+                                            <h3 style={{ 
+                                                fontSize: '20px', 
+                                                fontWeight: '600', 
+                                                marginBottom: '12px',
+                                                color: '#374151'
+                                            }}>
                                                 Nenhuma loja encontrada
                                             </h3>
-                                            <p style={{ color: '#6b7280' }}>
-                                                Tente buscar por outra localização
+                                            <p style={{ color: '#6B7280', fontSize: '14px' }}>
+                                                Tente buscar por outra localização ou entre em contato com o SAC
                                             </p>
                                         </div>
                                     ) : (
@@ -558,25 +833,7 @@
                                             <div
                                                 key={store.id}
                                                 onClick={() => openWhatsApp(store)}
-                                                style={{
-                                                    border: index === 0 && store.distance < 50 ? '2px solid #FF6B35' : '1px solid #e5e7eb',
-                                                    borderRadius: '8px',
-                                                    padding: '16px',
-                                                    marginBottom: '12px',
-                                                    cursor: 'pointer',
-                                                    background: index === 0 && store.distance < 50 ? '#fff7ed' : 'white',
-                                                    position: 'relative'
-                                                }}
-                                                onMouseEnter={(e) => {
-                                                    if (!(index === 0 && store.distance < 50)) {
-                                                        e.currentTarget.style.background = '#f9fafb';
-                                                    }
-                                                }}
-                                                onMouseLeave={(e) => {
-                                                    if (!(index === 0 && store.distance < 50)) {
-                                                        e.currentTarget.style.background = 'white';
-                                                    }
-                                                }}
+                                                className={`store-card ${index === 0 && store.distance < 50 ? 'featured' : ''}`}
                                             >
                                                 {index === 0 && store.distance < 50 && (
                                                     <span style={{
@@ -584,72 +841,108 @@
                                                         background: '#FF6B35',
                                                         color: 'white',
                                                         fontSize: '12px',
-                                                        padding: '2px 8px',
-                                                        borderRadius: '9999px',
-                                                        marginBottom: '8px'
+                                                        padding: '4px 12px',
+                                                        borderRadius: '20px',
+                                                        marginBottom: '12px',
+                                                        fontWeight: '600'
                                                     }}>
-                                                        Mais próxima
+                                                        ⭐ Mais próxima
                                                     </span>
                                                 )}
                                                 
                                                 <div style={{ 
                                                     position: 'absolute',
-                                                    top: '16px',
-                                                    right: '16px',
-                                                    fontWeight: 'bold',
-                                                    color: '#FF6B35'
+                                                    top: '20px',
+                                                    right: '20px',
+                                                    background: '#FFF7F3',
+                                                    padding: '6px 12px',
+                                                    borderRadius: '8px',
+                                                    fontWeight: '600',
+                                                    color: '#FF6B35',
+                                                    fontSize: '14px'
                                                 }}>
                                                     {store.distance.toFixed(1)} km
                                                 </div>
                                                 
-                                                <h5 style={{ fontWeight: 'bold', marginBottom: '4px' }}>{store.name}</h5>
-                                                <p style={{ fontSize: '14px', color: '#6b7280' }}>
-                                                    {store.city}, {store.state}
+                                                <h5 style={{ 
+                                                    fontWeight: '600', 
+                                                    marginBottom: '8px',
+                                                    color: '#1F2937',
+                                                    fontSize: '16px',
+                                                    paddingRight: '80px'
+                                                }}>
+                                                    {store.name}
+                                                </h5>
+                                                <p style={{ 
+                                                    fontSize: '14px', 
+                                                    color: '#6B7280',
+                                                    marginBottom: '6px'
+                                                }}>
+                                                    📍 {store.city}, {store.state}
                                                 </p>
-                                                <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>
+                                                <p style={{ 
+                                                    fontSize: '13px', 
+                                                    color: '#9CA3AF',
+                                                    marginBottom: '8px'
+                                                }}>
                                                     {store.address}
                                                 </p>
                                                 {store.cep && (
-                                                    <p style={{ fontSize: '11px', color: '#9ca3af', marginTop: '2px' }}>
+                                                    <p style={{ 
+                                                        fontSize: '12px', 
+                                                        color: '#9CA3AF',
+                                                        marginBottom: '8px'
+                                                    }}>
                                                         CEP: {store.cep}
                                                     </p>
                                                 )}
                                                 {store.hours && (
-                                                    <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '8px' }}>
+                                                    <p style={{ 
+                                                        fontSize: '13px', 
+                                                        color: '#6B7280',
+                                                        marginBottom: '12px'
+                                                    }}>
                                                         ⏰ {store.hours.split('|')[0]}
                                                     </p>
                                                 )}
                                                 <div style={{ 
-                                                    marginTop: '8px',
                                                     display: 'flex',
                                                     alignItems: 'center',
-                                                    gap: '4px',
-                                                    color: '#22c55e'
+                                                    gap: '8px',
+                                                    color: '#22C55E',
+                                                    fontSize: '14px',
+                                                    fontWeight: '600'
                                                 }}>
-                                                    💬 WhatsApp
+                                                    💬 Conversar no WhatsApp
                                                 </div>
                                             </div>
                                         ))
                                     )}
-                                </>
+                                </div>
                             )}
+                        </div>
+
+                        {/* Footer */}
+                        <div style={{
+                            padding: '16px 24px',
+                            background: 'white',
+                            borderTop: '1px solid #E5E7EB',
+                            textAlign: 'center'
+                        }}>
+                            <p style={{ 
+                                fontSize: '12px', 
+                                color: '#9CA3AF'
+                            }}>
+                                © 2025 Alphabeto - Vestindo criança como criança
+                            </p>
                         </div>
                     </div>
 
                     {/* Overlay para mobile */}
-                    {isOpen && window.innerWidth < 640 && (
-                        <div 
-                            className="alphabeto-widget-overlay"
-                            onClick={() => setIsOpen(false)}
-                        ></div>
-                    )}
-
-                    <style>{`
-                        @keyframes pulse {
-                            0%, 100% { opacity: 1; }
-                            50% { opacity: 0.5; }
-                        }
-                    `}</style>
+                    <div 
+                        className={`alphabeto-widget-overlay ${isOpen ? 'show' : ''}`}
+                        onClick={() => setIsOpen(false)}
+                    ></div>
                 </>
             );
         };
