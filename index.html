@@ -220,15 +220,15 @@
         }
         
         .btn-sac {
-            background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
-            color: white;
-            padding: 14px 24px;
+            background: #F9FAFB;
+            color: #6B7280;
+            padding: 12px 20px;
             border-radius: 12px;
-            font-weight: 600;
+            font-weight: 500;
             transition: all 0.2s ease;
-            border: none;
+            border: 1px solid #E5E7EB;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -237,8 +237,9 @@
         }
         
         .btn-sac:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.25);
+            background: white;
+            border-color: #D1D5DB;
+            color: #4B5563;
         }
         
         /* Input */
@@ -683,17 +684,23 @@
 
                                     {/* Botão das Fadinhas */}
                                     {sacInfo && (
-                                        <>
-                                            <div className="divider"></div>
+                                        <div style={{ marginTop: '32px' }}>
+                                            <p style={{ 
+                                                fontSize: '12px', 
+                                                color: '#9CA3AF',
+                                                textAlign: 'center',
+                                                marginBottom: '12px'
+                                            }}>
+                                                Precisa de ajuda?
+                                            </p>
                                             <button
                                                 onClick={openSACWhatsApp}
                                                 className="btn-sac"
                                             >
-                                                <span style={{ fontSize: '20px' }}>🧚‍♀️</span>
+                                                <span style={{ fontSize: '16px' }}>🧚‍♀️</span>
                                                 Falar com as Fadinhas do SAC
                                             </button>
-                                            <div className="divider"></div>
-                                        </>
+                                        </div>
                                     )}
 
                                     {/* Lista de todas as lojas */}
