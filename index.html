@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alphabeto Store Locator Widget</title>
+    
+    <!-- React e React DOM via CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        /* Estilos customizados para o widget */
+        .alphabeto-widget-container {
+            position: fixed;
+            z-index: 999999;
+        }
+        
+        .alphabeto-widget-button {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 999999;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+            border: none;
+            cursor: pointer;
+        }
+        
+        .alphabeto-widget-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .alphabeto-widget-modal {
+            position: fixed;
+            right: 0;
+            top: 0;
+            height: 100%;
+            width: 100%;
+            max-width: 384px;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 999999;
+            transition: transform 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .alphabeto-widget-modal.closed {
+            transform: translateX(100%);
+        }
+        
+        .alphabeto-widget-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999998;
+        }
+        
+        @media (max-width: 640px) {
+            .alphabeto-widget-modal {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Container do Widget -->
+    <div id="alphabeto-store-locator-widget"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Componente do Widget
+        const AlphabetoStoreLocatorWidget = () => {
+            const [isOpen, setIsOpen] = useState(false);
+            const [currentStep, setCurrentStep] = useState('location');
+            const [addressInput, setAddressInput] = useState('');
+            const [nearbyStores, setNearbyStores] = useState([]);
+            const [isLoading, setIsLoading] = useState(false);
+
+            // Array de lojas (versão reduzida para exemplo)
+            const allStores = [
+                {
+                    id: 1,
+                    name: "Alphabeto Shopping Manauara",
+                    address: "Avenida Mário Ypiranga, 1300 - Adrianópolis",
+                    city: "Manaus",
+                    state: "AM",
+                    phone: "559294481001",
+                    whatsapp: "559294481001",
+                    lat: -3.1170,
+                    lng: -60.0258,
+                    hours: "Seg-Sáb: 10h-22h | Dom: 12h-21h"
+                },
+                {
+                    id: 37,
+                    name: "Alphabeto Aliança Shopping",
+                    address: "Praça Doutor Augusto Glória, 327 - Centro",
+                    city: "São João Nepomuceno",
+                    state: "MG",
+                    phone: "5532991295904",
+                    whatsapp: "5532991295904",
+                    lat: -21.5388,
+                    lng: -43.0089,
+                    hours: "Seg-Sáb: 9h-18h | Dom: 9h-14h"
+                },
+                {
+                    id: 31,
+                    name: "Alphabeto Barra Shopping",
+                    address: "Avenida das Américas, 4666 - Barra da Tijuca",
+                    city: "Rio de Janeiro",
+                    state: "RJ",
+                    phone: "5521996628735",
+                    whatsapp: "5521996628735",
+                    lat: -22.9068,
+                    lng: -43.1729,
+                    hours: "Seg-Sáb: 10h-22h | Dom: 13h-21h"
+                },
+                {
+                    id: 6,
+                    name: "Alphabeto Morumbi Shopping",
+                    address: "Avenida Roque Petroni Júnior, 1089 - Vila Gertrudes",
+                    city: "São Paulo",
+                    state: "SP",
+                    phone: "5511930402110",
+                    whatsapp: "5511930402110",
+                    lat: -23.5505,
+                    lng: -46.6333,
+                    hours: "Seg-Sáb: 10h-22h | Dom: 14h-20h"
+                },
+                {
+                    id: 36,
+                    name: "Alphabeto Shopping Minas",
+                    address: "Avenida Cristiano Machado, 4000 - União",
+                    city: "Belo Horizonte",
+                    state: "MG",
+                    phone: "5531982839637",
+                    whatsapp: "5531982839637",
+                    lat: -19.9167,
+                    lng: -43.9333,
+                    hours: "Seg-Sáb: 10h-22h | Dom: 14h-20h"
+                }
+            ];
+
+            const calculateDistance = (lat1, lng1, lat2, lng2) => {
+                const R = 6371;
+                const dLat = (lat2 - lat1) * Math.PI / 180;
+                const dLng = (lng2 - lng1) * Math.PI / 180;
+                const a = 
+                    Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                    Math.sin(dLng/2) * Math.sin(dLng/2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                return R * c;
+            };
+
+            const geocodeAddress = async (address) => {
+                try {
+                    const searchAddress = `${address}, Brasil`;
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchAddress)}&countrycodes=br&limit=1`
+                    );
+                    
+                    const data = await response.json();
+                    
+                    if (data && data[0]) {
+                        return {
+                            lat: parseFloat(data[0].lat),
+                            lng: parseFloat(data[0].lon)
+                        };
+                    }
+                    
+                    throw new Error('Endereço não encontrado');
+                } catch (error) {
+                    // Fallback para São Paulo
+                    return { lat: -23.5505, lng: -46.6333 };
+                }
+            };
+
+            const findNearbyStores = async () => {
+                if (!addressInput.trim()) {
+                    alert("Por favor, digite seu endereço.");
+                    return;
+                }
+
+                setIsLoading(true);
+                
+                try {
+                    const coordinates = await geocodeAddress(addressInput);
+                    
+                    const storesWithDistance = allStores.map(store => ({
+                        ...store,
+                        distance: calculateDistance(coordinates.lat, coordinates.lng, store.lat, store.lng)
+                    })).sort((a, b) => a.distance - b.distance);
+                    
+                    setNearbyStores(storesWithDistance);
+                    setCurrentStep('stores');
+                } catch (error) {
+                    alert("Não foi possível encontrar o endereço.");
+                }
+                
+                setIsLoading(false);
+            };
+
+            const openWhatsApp = (store) => {
+                const now = new Date();
+                const hour = now.getHours();
+                
+                let greeting = "Olá!";
+                if (hour < 12) greeting = "Bom dia!";
+                else if (hour < 18) greeting = "Boa tarde!";
+                else greeting = "Boa noite!";
+                
+                const message = `${greeting} 👶\n\nGostaria de mais informações sobre a ${store.name}!\n\nEndereço: ${store.address}`;
+                const whatsappUrl = `https://wa.me/${store.whatsapp}?text=${encodeURIComponent(message)}`;
+                
+                window.open(whatsappUrl, '_blank');
+            };
+
+            useEffect(() => {
+                const handleClickOutside = (event) => {
+                    if (isOpen && !event.target.closest('.alphabeto-widget-modal') && !event.target.closest('.alphabeto-widget-button')) {
+                        setIsOpen(false);
+                    }
+                };
+
+                document.addEventListener('mousedown', handleClickOutside);
+                return () => document.removeEventListener('mousedown', handleClickOutside);
+            }, [isOpen]);
+
+            return (
+                <>
+                    {/* Botão Flutuante */}
+                    <button
+                        onClick={() => setIsOpen(true)}
+                        className="alphabeto-widget-button"
+                        aria-label="Encontrar loja Alphabeto"
+                    >
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                            <path d="M3 21h18M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4M5 21V10.85M19 21V10.85"/>
+                        </svg>
+                        <div style={{
+                            position: 'absolute',
+                            top: '-4px',
+                            right: '-4px',
+                            width: '12px',
+                            height: '12px',
+                            background: '#22c55e',
+                            borderRadius: '50%',
+                            animation: 'pulse 2s infinite'
+                        }}></div>
+                    </button>
+
+                    {/* Modal */}
+                    <div className={`alphabeto-widget-modal ${!isOpen ? 'closed' : ''}`}>
+                        {/* Header */}
+                        <div style={{
+                            background: 'linear-gradient(to right, #FF6B35, #F7931E)',
+                            color: 'white',
+                            padding: '16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between'
+                        }}>
+                            <h2 style={{ fontSize: '20px', fontWeight: 'bold' }}>Lojas Alphabeto</h2>
+                            <button
+                                onClick={() => setIsOpen(false)}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'white',
+                                    cursor: 'pointer',
+                                    padding: '4px'
+                                }}
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* Conteúdo */}
+                        <div style={{ height: 'calc(100% - 64px)', overflowY: 'auto', padding: '24px' }}>
+                            {currentStep === 'location' ? (
+                                <>
+                                    <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>
+                                        Encontre a loja mais próxima
+                                    </h3>
+                                    
+                                    <input
+                                        type="text"
+                                        placeholder="Digite seu endereço ou cidade..."
+                                        value={addressInput}
+                                        onChange={(e) => setAddressInput(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && findNearbyStores()}
+                                        style={{
+                                            width: '100%',
+                                            padding: '12px',
+                                            border: '2px solid #fed7aa',
+                                            borderRadius: '8px',
+                                            marginBottom: '16px',
+                                            fontSize: '16px'
+                                        }}
+                                    />
+                                    
+                                    <button
+                                        onClick={findNearbyStores}
+                                        disabled={isLoading}
+                                        style={{
+                                            width: '100%',
+                                            padding: '12px',
+                                            background: 'linear-gradient(to right, #FF6B35, #F7931E)',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            fontSize: '16px',
+                                            fontWeight: 'bold',
+                                            cursor: isLoading ? 'not-allowed' : 'pointer',
+                                            opacity: isLoading ? 0.5 : 1
+                                        }}
+                                    >
+                                        {isLoading ? 'Buscando...' : 'Buscar Lojas'}
+                                    </button>
+
+                                    <div style={{ marginTop: '32px' }}>
+                                        <h4 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '16px' }}>
+                                            Todas as lojas
+                                        </h4>
+                                        {allStores.map((store) => (
+                                            <div
+                                                key={store.id}
+                                                onClick={() => openWhatsApp(store)}
+                                                style={{
+                                                    border: '1px solid #e5e7eb',
+                                                    borderRadius: '8px',
+                                                    padding: '16px',
+                                                    marginBottom: '12px',
+                                                    cursor: 'pointer',
+                                                    transition: 'background 0.2s'
+                                                }}
+                                                onMouseEnter={(e) => e.currentTarget.style.background = '#f9fafb'}
+                                                onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+                                            >
+                                                <h5 style={{ fontWeight: 'bold', marginBottom: '4px' }}>{store.name}</h5>
+                                                <p style={{ fontSize: '14px', color: '#6b7280' }}>
+                                                    {store.city}, {store.state}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={() => setCurrentStep('location')}
+                                        style={{
+                                            color: '#FF6B35',
+                                            fontWeight: 'bold',
+                                            marginBottom: '16px',
+                                            background: 'none',
+                                            border: 'none',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        ← Voltar
+                                    </button>
+                                    
+                                    <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>
+                                        Lojas encontradas
+                                    </h3>
+                                    
+                                    {nearbyStores.map((store, index) => (
+                                        <div
+                                            key={store.id}
+                                            onClick={() => openWhatsApp(store)}
+                                            style={{
+                                                border: index === 0 ? '2px solid #FF6B35' : '1px solid #e5e7eb',
+                                                borderRadius: '8px',
+                                                padding: '16px',
+                                                marginBottom: '12px',
+                                                cursor: 'pointer',
+                                                background: index === 0 ? '#fff7ed' : 'white'
+                                            }}
+                                        >
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                                                <div>
+                                                    <h5 style={{ fontWeight: 'bold', marginBottom: '4px' }}>{store.name}</h5>
+                                                    {index === 0 && (
+                                                        <span style={{
+                                                            background: '#FF6B35',
+                                                            color: 'white',
+                                                            fontSize: '12px',
+                                                            padding: '2px 8px',
+                                                            borderRadius: '9999px'
+                                                        }}>
+                                                            Mais próxima
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <span style={{ color: '#22c55e' }}>💬</span>
+                                            </div>
+                                            <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '8px' }}>
+                                                📍 {store.distance?.toFixed(1)} km
+                                            </p>
+                                            <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>
+                                                {store.address}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Overlay para mobile */}
+                    {isOpen && window.innerWidth < 640 && (
+                        <div 
+                            className="alphabeto-widget-overlay"
+                            onClick={() => setIsOpen(false)}
+                        ></div>
+                    )}
+
+                    <style>{`
+                        @keyframes pulse {
+                            0%, 100% { opacity: 1; }
+                            50% { opacity: 0.5; }
+                        }
+                    `}</style>
+                </>
+            );
+        };
+
+        // Renderizar o widget
+        ReactDOM.render(<AlphabetoStoreLocatorWidget />, document.getElementById('alphabeto-store-locator-widget'));
+    </script>
+
+    <!-- Babel Transpiler -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</body>
+</html>
