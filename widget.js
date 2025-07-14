@@ -1,6 +1,6 @@
 /**
  * Alphabeto Store Locator Widget
- * Version: 2.0.0 - Com Geolocalização e Busca por Proximidade
+ * Version: 3.0.0 - CEP melhorado, arquivo externo de lojas e botão Fadinhas
  */
 
 (function() {
@@ -16,42 +16,18 @@
     window.AlphabetoWidget = {
         config: {
             position: { bottom: '24px', right: '24px' },
-            colors: { primary: '#FF6B35', secondary: '#F7931E' }
+            colors: { primary: '#FF6B35', secondary: '#F7931E' },
+            storesUrl: 'stores.json' // URL do arquivo de lojas
         },
 
-        // Lista completa de lojas
-        stores: [
-            { id: 1, name: "Alphabeto Shopping Manauara", address: "Avenida Mário Ypiranga, 1300 - Adrianópolis", city: "Manaus", state: "AM", whatsapp: "559294481001", lat: -3.1170, lng: -60.0258, hours: "Seg-Sáb: 10h-22h | Dom: 12h-21h" },
-            { id: 2, name: "Alphabeto Salvador Shopping", address: "Avenida Tancredo Neves, 3133 - Caminho das Árvores", city: "Salvador", state: "BA", whatsapp: "5571996803770", lat: -12.9777, lng: -38.5016, hours: "Seg-Sáb: 9h-22h | Dom: 13h-21h" },
-            { id: 3, name: "Alphabeto Shopping Barra", address: "Avenida Centenário, 2992 - Chame-Chame", city: "Salvador", state: "BA", whatsapp: "5571999963037", lat: -12.9777, lng: -38.5016, hours: "Seg-Sáb: 9h-22h | Dom: 12h-20h" },
-            { id: 4, name: "Alphabeto Shopping Campo Grande", address: "Avenida Afonso Pena, 4909 - Cidade Jardim", city: "Campo Grande", state: "MS", whatsapp: "5567992312928", lat: -20.4428, lng: -54.6464, hours: "Seg-Sáb: 10h-22h | Dom: 12h-20h" },
-            { id: 5, name: "Alphabeto Shopping da Bahia", address: "Avenida Tancredo Neves, 148 - Caminho das Árvores", city: "Salvador", state: "BA", whatsapp: "5571996636656", lat: -12.9777, lng: -38.5016, hours: "Seg-Sáb: 9h-22h | Dom: 13h-21h" },
-            { id: 6, name: "Alphabeto Morumbi Shopping", address: "Avenida Roque Petroni Júnior, 1089 - Vila Gertrudes", city: "São Paulo", state: "SP", whatsapp: "5511930402110", lat: -23.5505, lng: -46.6333, hours: "Seg-Sáb: 10h-22h | Dom: 14h-20h" },
-            { id: 7, name: "Alphabeto Shopping Partage", address: "Avenida Presidente Kennedy, 425 - Centro", city: "São Gonçalo", state: "RJ", whatsapp: "5521979216267", lat: -22.8271, lng: -43.0544, hours: "Seg-Sáb: 10h-22h | Dom: 13h-21h" },
-            { id: 8, name: "Alphabeto Shopping Sulacap", address: "Avenida Marechal Fontenele, 3545 - Jardim Sulacap", city: "Rio de Janeiro", state: "RJ", whatsapp: "5521981210062", lat: -22.8886, lng: -43.3963, hours: "Seg-Sáb: 10h-22h | Dom: 15h-21h" },
-            { id: 9, name: "Alphabeto Shopping Recreio", address: "Avenida das Américas, 19019 - Recreio dos Bandeirantes", city: "Rio de Janeiro", state: "RJ", whatsapp: "5521983378151", lat: -23.0174, lng: -43.4937, hours: "Seg-Sáb: 10h-22h | Dom: 15h-21h" },
-            { id: 24, name: "Alphabeto Shopping Rio Sul", address: "Avenida Lauro Sodré, 445 - Botafogo", city: "Rio de Janeiro", state: "RJ", whatsapp: "5521971247415", lat: -22.9519, lng: -43.1778, hours: "Seg-Sáb: 10h-22h | Dom: 15h-21h" },
-            { id: 29, name: "Alphabeto Centro Juiz de Fora", address: "Rua Barão de São João Nepomuceno, 409 - Centro", city: "Juiz de Fora", state: "MG", whatsapp: "5532984097290", lat: -21.7622, lng: -43.3434, hours: "Seg-Sex: 10h-19h | Sáb: 10h-15h" },
-            { id: 30, name: "Alphabeto Shopping Independência", address: "Avenida Presidente Itamar Franco, 3600 - São Mateus", city: "Juiz de Fora", state: "MG", whatsapp: "553299109256", lat: -21.7622, lng: -43.3434, hours: "Seg-Sáb: 10h-22h | Dom: 13h-21h" },
-            { id: 31, name: "Alphabeto Barra Shopping", address: "Avenida das Américas, 4666 - Barra da Tijuca", city: "Rio de Janeiro", state: "RJ", whatsapp: "5521996628735", lat: -23.0049, lng: -43.3211, hours: "Seg-Sáb: 10h-22h | Dom: 13h-21h" },
-            { id: 34, name: "Alphabeto Shopping Via Barreiro", address: "Avenida Afonso Vaz de Melo, 640 - Barreiro", city: "Belo Horizonte", state: "MG", whatsapp: "553132342805", lat: -19.9760, lng: -44.0263, hours: "Seg-Sáb: 10h-22h | Dom: 14h-20h" },
-            { id: 35, name: "Alphabeto Shopping Paragem", address: "Avenida Professor Mário Werneck, 1360 - Estoril", city: "Belo Horizonte", state: "MG", whatsapp: "5531971369325", lat: -19.9665, lng: -43.9901, hours: "Seg-Sáb: 10h-22h | Dom: 14h-20h" },
-            { id: 36, name: "Alphabeto Shopping Minas", address: "Avenida Cristiano Machado, 4000 - União", city: "Belo Horizonte", state: "MG", whatsapp: "5531982839637", lat: -19.8483, lng: -43.9232, hours: "Seg-Sáb: 10h-22h | Dom: 14h-20h" },
-            { id: 37, name: "Alphabeto Aliança Shopping", address: "Praça Doutor Augusto Glória, 327 - Centro", city: "São João Nepomuceno", state: "MG", whatsapp: "5532991295904", lat: -21.5388, lng: -43.0089, hours: "Seg-Sáb: 9h-18h | Dom: 9h-14h" },
-            { id: 38, name: "Alphabeto Shopping Vitória", address: "Avenida Américo Buaiz, 200 - Enseada do Suá", city: "Vitória", state: "ES", whatsapp: "5527981318879", lat: -20.2976, lng: -40.2958, hours: "Seg-Sáb: 10h-22h | Dom: 14h-20h" },
-            { id: 39, name: "Alphabeto Praia do Canto", address: "Rua Chapot Presvot, 249 - Praia do Canto", city: "Vitória", state: "ES", whatsapp: "5527981346858", lat: -20.2821, lng: -40.3015, hours: "Seg-Sáb: 9h-19h" },
-            { id: 40, name: "Alphabeto Shopping Vila Velha", address: "Avenida Luciano das Neves, 2418 - Centro de Vila Velha", city: "Vila Velha", state: "ES", whatsapp: "5527998994781", lat: -20.3305, lng: -40.2922, hours: "Seg-Sáb: 10h-22h | Dom: 14h-20h" },
-            { id: 41, name: "Alphabeto Taguatinga Shopping", address: "QS 1, 40 - Taguatinga", city: "Brasília", state: "DF", whatsapp: "556192165474", lat: -15.8333, lng: -48.0500, hours: "Seg-Sáb: 10h-22h | Dom: 14h-20h" },
-            { id: 42, name: "Alphabeto Shopping Pátio Brasil", address: "Setor Comercial Sul - Asa Sul", city: "Brasília", state: "DF", whatsapp: "5561992395778", lat: -15.7939, lng: -47.8828, hours: "Seg-Sáb: 10h-22h | Dom: 14h-20h" },
-            { id: 46, name: "Alphabeto Shopping Ibirapuera", address: "Avenida Ibirapuera, 3103 - Indianópolis", city: "São Paulo", state: "SP", whatsapp: "5511932888817", lat: -23.6117, lng: -46.6682, hours: "Seg-Sáb: 10h-22h | Dom: 14h-22h" },
-            { id: 52, name: "Alphabeto São José dos Campos", address: "Avenida Andrômeda, 227 - Jardim Satélite", city: "São José dos Campos", state: "SP", whatsapp: "5512974085088", lat: -23.2237, lng: -45.9009, hours: "Seg-Sáb: 10h-22h | Dom: 13h-21h" },
-            { id: 55, name: "Alphabeto Grand Plaza", address: "Avenida Industrial, 600 - Jardim", city: "Santo André", state: "SP", whatsapp: "5511997937700", lat: -23.6639, lng: -46.5383, hours: "Seg-Sáb: 10h-22h | Dom: 14h-20h" }
-        ],
+        // Dados carregados
+        stores: [],
+        sacInfo: null,
 
         // Estado do widget
         state: {
             isOpen: false,
-            currentView: 'menu', // menu, searching, results
+            currentView: 'menu',
             userLocation: null,
             searchResults: [],
             isLoading: false
@@ -73,12 +49,62 @@
                 }
             }
 
-            this.injectStyles();
-            this.createWidget();
-            
-            setTimeout(function() {
-                self.attachEventListeners();
-            }, 100);
+            // Carregar lojas primeiro
+            this.loadStores(function() {
+                self.injectStyles();
+                self.createWidget();
+                
+                setTimeout(function() {
+                    self.attachEventListeners();
+                }, 100);
+            });
+        },
+
+        // Carregar lojas do arquivo JSON
+        loadStores: function(callback) {
+            var self = this;
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', this.config.storesUrl, true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    try {
+                        var data = JSON.parse(xhr.responseText);
+                        self.stores = data.stores || [];
+                        self.sacInfo = data.sac || null;
+                        console.log('Lojas carregadas:', self.stores.length);
+                    } catch (e) {
+                        console.error('Erro ao parsear JSON:', e);
+                        // Fallback para algumas lojas
+                        self.stores = [
+                            { id: 37, name: "Alphabeto Aliança Shopping", address: "Praça Doutor Augusto Glória, 327 - Centro", city: "São João Nepomuceno", state: "MG", cep: "36680-000", whatsapp: "5532991295904", lat: -21.5388, lng: -43.0089, hours: "Seg-Sáb: 9h-18h | Dom: 9h-14h" },
+                            { id: 31, name: "Alphabeto Barra Shopping", address: "Avenida das Américas, 4666 - Barra da Tijuca", city: "Rio de Janeiro", state: "RJ", cep: "22640-102", whatsapp: "5521996628735", lat: -23.0049, lng: -43.3211, hours: "Seg-Sáb: 10h-22h | Dom: 13h-21h" },
+                            { id: 6, name: "Alphabeto Morumbi Shopping", address: "Avenida Roque Petroni Júnior, 1089 - Vila Gertrudes", city: "São Paulo", state: "SP", cep: "04707-900", whatsapp: "5511930402110", lat: -23.6224, lng: -46.6993, hours: "Seg-Sáb: 10h-22h | Dom: 14h-20h" }
+                        ];
+                        self.sacInfo = { name: "Fadinhas do SAC", whatsapp: "5521999999999", message: "Olá! Gostaria de falar com as Fadinhas do SAC da Alphabeto! 🧚‍♀️" };
+                    }
+                } else {
+                    console.error('Erro ao carregar lojas:', xhr.status);
+                    // Usar lojas de fallback
+                    self.stores = [
+                        { id: 37, name: "Alphabeto Aliança Shopping", address: "Praça Doutor Augusto Glória, 327 - Centro", city: "São João Nepomuceno", state: "MG", cep: "36680-000", whatsapp: "5532991295904", lat: -21.5388, lng: -43.0089, hours: "Seg-Sáb: 9h-18h | Dom: 9h-14h" },
+                        { id: 31, name: "Alphabeto Barra Shopping", address: "Avenida das Américas, 4666 - Barra da Tijuca", city: "Rio de Janeiro", state: "RJ", cep: "22640-102", whatsapp: "5521996628735", lat: -23.0049, lng: -43.3211, hours: "Seg-Sáb: 10h-22h | Dom: 13h-21h" },
+                        { id: 6, name: "Alphabeto Morumbi Shopping", address: "Avenida Roque Petroni Júnior, 1089 - Vila Gertrudes", city: "São Paulo", state: "SP", cep: "04707-900", whatsapp: "5511930402110", lat: -23.6224, lng: -46.6993, hours: "Seg-Sáb: 10h-22h | Dom: 14h-20h" }
+                    ];
+                    self.sacInfo = { name: "Fadinhas do SAC", whatsapp: "5521999999999", message: "Olá! Gostaria de falar com as Fadinhas do SAC da Alphabeto! 🧚‍♀️" };
+                }
+                
+                if (callback) callback();
+            };
+            xhr.onerror = function() {
+                console.error('Erro de rede ao carregar lojas');
+                // Usar lojas de fallback
+                self.stores = [
+                    { id: 37, name: "Alphabeto Aliança Shopping", address: "Praça Doutor Augusto Glória, 327 - Centro", city: "São João Nepomuceno", state: "MG", cep: "36680-000", whatsapp: "5532991295904", lat: -21.5388, lng: -43.0089, hours: "Seg-Sáb: 9h-18h | Dom: 9h-14h" }
+                ];
+                self.sacInfo = { name: "Fadinhas do SAC", whatsapp: "5521999999999", message: "Olá! Gostaria de falar com as Fadinhas do SAC da Alphabeto! 🧚‍♀️" };
+                if (callback) callback();
+            };
+            xhr.send();
         },
 
         // Estilos CSS
@@ -104,6 +130,7 @@
                 '.alphabeto-widget-btn:disabled { opacity: 0.5; cursor: not-allowed; }',
                 '.alphabeto-widget-btn-secondary { background: white; color: #FF6B35; border: 2px solid #FF6B35; }',
                 '.alphabeto-widget-btn-secondary:hover { background: #fff7ed; }',
+                '.alphabeto-widget-btn-sac { background: linear-gradient(to right, #8B5CF6, #EC4899); margin-top: 16px; }',
                 '.alphabeto-widget-store { border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; background: white; position: relative; }',
                 '.alphabeto-widget-store:hover { background: #f9fafb; border-color: #d1d5db; }',
                 '.alphabeto-widget-store.featured { border: 2px solid #FF6B35; background: #fff7ed; }',
@@ -118,6 +145,7 @@
                 '.alphabeto-widget-back:hover { text-decoration: underline; }',
                 '.alphabeto-widget-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 999998; opacity: 0; transition: opacity 0.3s; pointer-events: none; }',
                 '.alphabeto-widget-overlay.show { opacity: 1; pointer-events: auto; }',
+                '.alphabeto-widget-divider { height: 1px; background: #e5e7eb; margin: 24px 0; }',
                 '@media (max-width: 640px) { .alphabeto-widget-modal { max-width: 100%; } }'
             ].join('\n');
 
@@ -187,6 +215,14 @@
             html += '<input type="text" placeholder="Digite sua cidade, CEP ou endereço..." class="alphabeto-widget-input" id="alphabeto-widget-search-input" style="margin-bottom: 12px;" />';
             html += '<button class="alphabeto-widget-btn alphabeto-widget-btn-secondary" id="alphabeto-widget-search-btn">🔍 Buscar lojas</button>';
             
+            // Botão das Fadinhas
+            if (this.sacInfo) {
+                html += '<div class="alphabeto-widget-divider"></div>';
+                html += '<button class="alphabeto-widget-btn alphabeto-widget-btn-sac" id="alphabeto-widget-sac">';
+                html += '🧚‍♀️ Falar com as Fadinhas do SAC';
+                html += '</button>';
+            }
+            
             // Todas as lojas
             html += '<div style="margin-top: 32px;">';
             html += '<h4 style="font-size: 16px; font-weight: bold; margin-bottom: 16px;">Todas as lojas</h4>';
@@ -203,6 +239,97 @@
             
             html += '</div></div>';
             return html;
+        },
+
+        // Formatar CEP
+        formatCEP: function(cep) {
+            // Remove tudo que não é número
+            return cep.replace(/\D/g, '');
+        },
+
+        // Verificar se é CEP
+        isCEP: function(value) {
+            var cleaned = this.formatCEP(value);
+            return cleaned.length === 8 && /^\d{8}$/.test(cleaned);
+        },
+
+        // Buscar por endereço melhorado
+        searchByAddress: function(address) {
+            var self = this;
+            
+            if (!address || address.trim() === '') {
+                alert('Por favor, digite um endereço, cidade ou CEP');
+                return;
+            }
+            
+            // Mostrar loading
+            document.getElementById('alphabeto-widget-content').innerHTML = this.renderLoading();
+            
+            // Verificar se é CEP
+            if (this.isCEP(address)) {
+                var cepFormatted = this.formatCEP(address);
+                
+                // Buscar via ViaCEP primeiro
+                var viacepUrl = 'https://viacep.com.br/ws/' + cepFormatted + '/json/';
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', viacepUrl, true);
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        try {
+                            var data = JSON.parse(xhr.responseText);
+                            if (!data.erro) {
+                                // Usar cidade e estado do ViaCEP para geocoding
+                                var searchAddress = data.logradouro + ', ' + data.localidade + ', ' + data.uf + ', Brasil';
+                                self.geocodeAddress(searchAddress);
+                            } else {
+                                // CEP não encontrado, tentar geocoding direto
+                                self.geocodeAddress(address + ', Brasil');
+                            }
+                        } catch (e) {
+                            self.geocodeAddress(address + ', Brasil');
+                        }
+                    } else {
+                        self.geocodeAddress(address + ', Brasil');
+                    }
+                };
+                xhr.onerror = function() {
+                    self.geocodeAddress(address + ', Brasil');
+                };
+                xhr.send();
+            } else {
+                // Não é CEP, fazer geocoding normal
+                this.geocodeAddress(address + ', Brasil');
+            }
+        },
+
+        // Geocoding melhorado
+        geocodeAddress: function(searchAddress) {
+            var self = this;
+            
+            var url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + 
+                     encodeURIComponent(searchAddress) + '&countrycodes=br&limit=1';
+            
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    if (data && data[0]) {
+                        var lat = parseFloat(data[0].lat);
+                        var lng = parseFloat(data[0].lon);
+                        self.handleLocationSuccess(lat, lng);
+                    } else {
+                        alert('Endereço não encontrado. Tente ser mais específico.');
+                        document.getElementById('alphabeto-widget-content').innerHTML = self.renderMainMenu();
+                        self.attachMenuListeners();
+                    }
+                } else {
+                    alert('Erro ao buscar endereço. Tente novamente.');
+                    document.getElementById('alphabeto-widget-content').innerHTML = self.renderMainMenu();
+                    self.attachMenuListeners();
+                }
+            };
+            xhr.send();
         },
 
         // Renderizar loading
@@ -257,7 +384,7 @@
 
         // Calcular distância
         calculateDistance: function(lat1, lng1, lat2, lng2) {
-            var R = 6371; // Raio da Terra em km
+            var R = 6371;
             var dLat = (lat2 - lat1) * Math.PI / 180;
             var dLng = (lng2 - lng1) * Math.PI / 180;
             var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -276,7 +403,6 @@
                 return;
             }
             
-            // Mostrar loading
             document.getElementById('alphabeto-widget-content').innerHTML = this.renderLoading();
             
             navigator.geolocation.getCurrentPosition(
@@ -296,51 +422,10 @@
             );
         },
 
-        // Buscar por endereço
-        searchByAddress: function(address) {
-            var self = this;
-            
-            if (!address || address.trim() === '') {
-                alert('Por favor, digite um endereço, cidade ou CEP');
-                return;
-            }
-            
-            // Mostrar loading
-            document.getElementById('alphabeto-widget-content').innerHTML = this.renderLoading();
-            
-            // Geocoding via Nominatim
-            var searchAddress = address + ', Brasil';
-            var url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + 
-                     encodeURIComponent(searchAddress) + '&countrycodes=br&limit=1';
-            
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', url, true);
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    var data = JSON.parse(xhr.responseText);
-                    if (data && data[0]) {
-                        var lat = parseFloat(data[0].lat);
-                        var lng = parseFloat(data[0].lon);
-                        self.handleLocationSuccess(lat, lng);
-                    } else {
-                        alert('Endereço não encontrado. Tente ser mais específico.');
-                        document.getElementById('alphabeto-widget-content').innerHTML = self.renderMainMenu();
-                        self.attachMenuListeners();
-                    }
-                } else {
-                    alert('Erro ao buscar endereço. Tente novamente.');
-                    document.getElementById('alphabeto-widget-content').innerHTML = self.renderMainMenu();
-                    self.attachMenuListeners();
-                }
-            };
-            xhr.send();
-        },
-
         // Processar localização encontrada
         handleLocationSuccess: function(lat, lng) {
             var self = this;
             
-            // Calcular distâncias
             var storesWithDistance = [];
             for (var i = 0; i < this.stores.length; i++) {
                 var store = Object.assign({}, this.stores[i]);
@@ -348,15 +433,12 @@
                 storesWithDistance.push(store);
             }
             
-            // Ordenar por distância
             storesWithDistance.sort(function(a, b) {
                 return a.distance - b.distance;
             });
             
-            // Salvar resultados
             this.state.searchResults = storesWithDistance;
             
-            // Mostrar resultados
             document.getElementById('alphabeto-widget-content').innerHTML = this.renderResults(storesWithDistance);
             this.attachResultsListeners();
         },
@@ -365,7 +447,6 @@
         attachEventListeners: function() {
             var self = this;
             
-            // Toggle
             var toggle = document.getElementById('alphabeto-widget-toggle');
             if (toggle) {
                 toggle.onclick = function() {
@@ -373,7 +454,6 @@
                 };
             }
             
-            // Close
             var close = document.getElementById('alphabeto-widget-close');
             if (close) {
                 close.onclick = function() {
@@ -381,7 +461,6 @@
                 };
             }
             
-            // Overlay
             var overlay = document.getElementById('alphabeto-widget-overlay');
             if (overlay) {
                 overlay.onclick = function() {
@@ -389,7 +468,6 @@
                 };
             }
             
-            // Menu listeners
             this.attachMenuListeners();
         },
 
@@ -397,7 +475,6 @@
         attachMenuListeners: function() {
             var self = this;
             
-            // Geolocalização
             var geoBtn = document.getElementById('alphabeto-widget-geolocation');
             if (geoBtn) {
                 geoBtn.onclick = function() {
@@ -405,7 +482,6 @@
                 };
             }
             
-            // Busca
             var searchBtn = document.getElementById('alphabeto-widget-search-btn');
             var searchInput = document.getElementById('alphabeto-widget-search-input');
             
@@ -423,7 +499,14 @@
                 };
             }
             
-            // Clique nas lojas
+            // Botão SAC
+            var sacBtn = document.getElementById('alphabeto-widget-sac');
+            if (sacBtn && self.sacInfo) {
+                sacBtn.onclick = function() {
+                    self.openSACWhatsApp();
+                };
+            }
+            
             this.attachStoreClicks();
         },
 
@@ -431,7 +514,6 @@
         attachResultsListeners: function() {
             var self = this;
             
-            // Voltar
             var back = document.getElementById('alphabeto-widget-back');
             if (back) {
                 back.onclick = function() {
@@ -440,7 +522,6 @@
                 };
             }
             
-            // Clique nas lojas
             this.attachStoreClicks();
         },
 
@@ -510,6 +591,14 @@
             var message = greeting + " 👶\n\nGostaria de mais informações sobre a " + store.name + "!\n\nEndereço: " + store.address;
             var whatsappUrl = "https://wa.me/" + store.whatsapp + "?text=" + encodeURIComponent(message);
             
+            window.open(whatsappUrl, '_blank');
+        },
+
+        // Open SAC WhatsApp
+        openSACWhatsApp: function() {
+            if (!this.sacInfo) return;
+            
+            var whatsappUrl = "https://wa.me/" + this.sacInfo.whatsapp + "?text=" + encodeURIComponent(this.sacInfo.message);
             window.open(whatsappUrl, '_blank');
         }
     };
