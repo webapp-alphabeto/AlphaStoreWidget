@@ -17,7 +17,7 @@
         config: {
             position: { bottom: '24px', right: '24px' },
             colors: { primary: '#FF6B35', secondary: '#F7931E' },
-            storesUrl: 'stores.json' // URL do arquivo de lojas
+            storesUrl: 'https://alphawidget.netlify.app/stores.json' // URL completa do arquivo
         },
 
         // Dados carregados
@@ -60,6 +60,16 @@
             });
         },
 
+        // Carregar lojas de fallback
+        loadFallbackStores: function() {
+            this.stores = [
+                { id: 37, name: "Alphabeto Aliança Shopping", address: "Praça Doutor Augusto Glória, 327 - Centro", city: "São João Nepomuceno", state: "MG", cep: "36680-000", whatsapp: "5532991295904", lat: -21.5388, lng: -43.0089, hours: "Seg-Sáb: 9h-18h | Dom: 9h-14h" },
+                { id: 31, name: "Alphabeto Barra Shopping", address: "Avenida das Américas, 4666 - Barra da Tijuca", city: "Rio de Janeiro", state: "RJ", cep: "22640-102", whatsapp: "5521996628735", lat: -23.0049, lng: -43.3211, hours: "Seg-Sáb: 10h-22h | Dom: 13h-21h" },
+                { id: 6, name: "Alphabeto Morumbi Shopping", address: "Avenida Roque Petroni Júnior, 1089 - Vila Gertrudes", city: "São Paulo", state: "SP", cep: "04707-900", whatsapp: "5511930402110", lat: -23.6224, lng: -46.6993, hours: "Seg-Sáb: 10h-22h | Dom: 14h-20h" }
+            ];
+            this.sacInfo = { name: "Fadinhas do SAC", whatsapp: "5521999999999", message: "Olá! Gostaria de falar com as Fadinhas do SAC da Alphabeto! 🧚‍♀️" };
+        },
+
         // Carregar lojas do arquivo JSON
         loadStores: function(callback) {
             var self = this;
@@ -68,40 +78,33 @@
             xhr.onload = function() {
                 if (xhr.status === 200) {
                     try {
+                        // Verificar se a resposta é JSON
+                        var contentType = xhr.getResponseHeader('content-type');
+                        if (contentType && contentType.indexOf('application/json') === -1) {
+                            console.warn('Resposta não é JSON, usando lojas de fallback');
+                            self.loadFallbackStores();
+                            if (callback) callback();
+                            return;
+                        }
+                        
                         var data = JSON.parse(xhr.responseText);
                         self.stores = data.stores || [];
                         self.sacInfo = data.sac || null;
                         console.log('Lojas carregadas:', self.stores.length);
                     } catch (e) {
                         console.error('Erro ao parsear JSON:', e);
-                        // Fallback para algumas lojas
-                        self.stores = [
-                            { id: 37, name: "Alphabeto Aliança Shopping", address: "Praça Doutor Augusto Glória, 327 - Centro", city: "São João Nepomuceno", state: "MG", cep: "36680-000", whatsapp: "5532991295904", lat: -21.5388, lng: -43.0089, hours: "Seg-Sáb: 9h-18h | Dom: 9h-14h" },
-                            { id: 31, name: "Alphabeto Barra Shopping", address: "Avenida das Américas, 4666 - Barra da Tijuca", city: "Rio de Janeiro", state: "RJ", cep: "22640-102", whatsapp: "5521996628735", lat: -23.0049, lng: -43.3211, hours: "Seg-Sáb: 10h-22h | Dom: 13h-21h" },
-                            { id: 6, name: "Alphabeto Morumbi Shopping", address: "Avenida Roque Petroni Júnior, 1089 - Vila Gertrudes", city: "São Paulo", state: "SP", cep: "04707-900", whatsapp: "5511930402110", lat: -23.6224, lng: -46.6993, hours: "Seg-Sáb: 10h-22h | Dom: 14h-20h" }
-                        ];
-                        self.sacInfo = { name: "Fadinhas do SAC", whatsapp: "5521999999999", message: "Olá! Gostaria de falar com as Fadinhas do SAC da Alphabeto! 🧚‍♀️" };
+                        self.loadFallbackStores();
                     }
                 } else {
                     console.error('Erro ao carregar lojas:', xhr.status);
-                    // Usar lojas de fallback
-                    self.stores = [
-                        { id: 37, name: "Alphabeto Aliança Shopping", address: "Praça Doutor Augusto Glória, 327 - Centro", city: "São João Nepomuceno", state: "MG", cep: "36680-000", whatsapp: "5532991295904", lat: -21.5388, lng: -43.0089, hours: "Seg-Sáb: 9h-18h | Dom: 9h-14h" },
-                        { id: 31, name: "Alphabeto Barra Shopping", address: "Avenida das Américas, 4666 - Barra da Tijuca", city: "Rio de Janeiro", state: "RJ", cep: "22640-102", whatsapp: "5521996628735", lat: -23.0049, lng: -43.3211, hours: "Seg-Sáb: 10h-22h | Dom: 13h-21h" },
-                        { id: 6, name: "Alphabeto Morumbi Shopping", address: "Avenida Roque Petroni Júnior, 1089 - Vila Gertrudes", city: "São Paulo", state: "SP", cep: "04707-900", whatsapp: "5511930402110", lat: -23.6224, lng: -46.6993, hours: "Seg-Sáb: 10h-22h | Dom: 14h-20h" }
-                    ];
-                    self.sacInfo = { name: "Fadinhas do SAC", whatsapp: "5521999999999", message: "Olá! Gostaria de falar com as Fadinhas do SAC da Alphabeto! 🧚‍♀️" };
+                    self.loadFallbackStores();
                 }
                 
                 if (callback) callback();
             };
             xhr.onerror = function() {
                 console.error('Erro de rede ao carregar lojas');
-                // Usar lojas de fallback
-                self.stores = [
-                    { id: 37, name: "Alphabeto Aliança Shopping", address: "Praça Doutor Augusto Glória, 327 - Centro", city: "São João Nepomuceno", state: "MG", cep: "36680-000", whatsapp: "5532991295904", lat: -21.5388, lng: -43.0089, hours: "Seg-Sáb: 9h-18h | Dom: 9h-14h" }
-                ];
-                self.sacInfo = { name: "Fadinhas do SAC", whatsapp: "5521999999999", message: "Olá! Gostaria de falar com as Fadinhas do SAC da Alphabeto! 🧚‍♀️" };
+                self.loadFallbackStores();
                 if (callback) callback();
             };
             xhr.send();
