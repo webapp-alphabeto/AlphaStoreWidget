@@ -220,15 +220,15 @@
         }
         
         .btn-sac {
-            background: #F9FAFB;
-            color: #6B7280;
+            background: white;
+            color: #8B5CF6;
             padding: 12px 20px;
             border-radius: 12px;
-            font-weight: 500;
+            font-weight: 600;
             transition: all 0.2s ease;
-            border: 1px solid #E5E7EB;
+            border: 2px solid #E9D5FF;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -237,9 +237,9 @@
         }
         
         .btn-sac:hover {
-            background: white;
-            border-color: #D1D5DB;
-            color: #4B5563;
+            background: #FAF5FF;
+            border-color: #C084FC;
+            transform: translateY(-1px);
         }
         
         /* Input */
@@ -684,20 +684,27 @@
 
                                     {/* Botão das Fadinhas */}
                                     {sacInfo && (
-                                        <div style={{ marginTop: '32px' }}>
+                                        <div style={{ 
+                                            marginTop: '40px',
+                                            padding: '20px',
+                                            background: '#FAF5FF',
+                                            borderRadius: '12px',
+                                            border: '1px solid #E9D5FF'
+                                        }}>
                                             <p style={{ 
-                                                fontSize: '12px', 
-                                                color: '#9CA3AF',
+                                                fontSize: '13px', 
+                                                color: '#7C3AED',
                                                 textAlign: 'center',
-                                                marginBottom: '12px'
+                                                marginBottom: '12px',
+                                                fontWeight: '500'
                                             }}>
-                                                Precisa de ajuda?
+                                                💬 Precisa de ajuda ou tem alguma dúvida?
                                             </p>
                                             <button
                                                 onClick={openSACWhatsApp}
                                                 className="btn-sac"
                                             >
-                                                <span style={{ fontSize: '16px' }}>🧚‍♀️</span>
+                                                <span style={{ fontSize: '18px' }}>🧚‍♀️</span>
                                                 Falar com as Fadinhas do SAC
                                             </button>
                                         </div>
