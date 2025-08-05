@@ -86,15 +86,15 @@
     },
     {
       "id": 8,
-      "name": "Alphabeto Barra Shopping",
-      "address": "Avenida das Américas, 4666, Loja 105B",
-      "city": "Rio de Janeiro",
-      "state": "RJ",
-      "cep": "22640102",
-      "whatsapp": "5521996628735",
-      "lat": -22.9972,
-      "lng": -43.3589,
-      "hours": "Seg-Sáb: 10h-22h | Dom e Feriados: 13h-21h"
+      "name": "Alphabeto Center Modas",
+      "address": "Av. Carlos Alves, 100",
+      "city": "São João Nepomuceno",
+      "state": "MG",
+      "cep": "36680000",
+      "whatsapp": "32991295904",
+      "lat": -21.53883520,
+      "lng": -43.00892130,
+      "hours": "Seg-Sex: 09h-18h | Sab: 09h-12h"
     },
     {
       "id": 9,
