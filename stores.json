@@ -37,18 +37,6 @@
       "hours": "Seg-Sáb: 10h-22h | Dom: 12h-21h"
     },
     {
-      "id": 4,
-      "name": "Alphabeto Salvador Shopping",
-      "address": "Avenida Tancredo Neves, 148",
-      "city": "Salvador",
-      "state": "BA",
-      "cep": "41820020",
-      "whatsapp": "5571996636656",
-      "lat": -12.974722,
-      "lng": -38.476665,
-      "hours": "Seg-Sáb: 10h-22h | Dom: 12h-21h"
-    },
-    {
       "id": 5,
       "name": "Alphabeto Ibirapuera",
       "address": "Avenida Ibirapuera, 3103, Loja 120, Piso Moema",
@@ -238,18 +226,6 @@
       "whatsapp": "5591985001515",
       "lat": -1.445166,
       "lng": -48.489136,
-      "hours": "Seg-Sáb: 10h-22h | Dom: 12h-21h"
-    },
-    {
-      "id": 21,
-      "name": "Alphabeto Park Jacarepaguá",
-      "address": "Estrada de Jacarepaguá, 6069, Loja 148B, Anil",
-      "city": "Rio de Janeiro",
-      "state": "RJ",
-      "cep": "22753033",
-      "whatsapp": "5521983510023",
-      "lat": -22.956056,
-      "lng": -43.337338,
       "hours": "Seg-Sáb: 10h-22h | Dom: 12h-21h"
     },
     {
