@@ -22,7 +22,7 @@
         config: {
             position: { bottom: '24px', right: '24px' },
             colors: { primary: '#FF6B35', secondary: '#F7931E' },
-            storesUrl: 'https://cdn.jsdelivr.net/gh/webapp-alphabeto/AlphaStoreWidget@main/stores.json'
+            storesUrl: 'https://cdn.jsdelivr.net/gh/webapp-alphabeto/AlphaStoreWidget@main/stores.json?v=2025010501'
         },
 
         // Dados carregados
