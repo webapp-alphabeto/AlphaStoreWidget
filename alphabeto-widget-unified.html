@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alphabeto Store Locator Widget</title>
+    <meta
+      name="description"
+      content="Encontre a loja Alphabeto mais próxima de você. Mais de 39 lojas em todo Brasil."
+    />
+
+    <!-- Favicon -->
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>👶</text></svg>"
+    />
+
+    <style>
+      /* Reset e namespace isolado */
+      .alphabeto-widget-container * {
+        box-sizing: border-box !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif !important;
+      }
+
+      /* Botão flutuante */
+      .alphabeto-widget-button {
+        position: fixed !important;
+        bottom: 24px !important;
+        right: 24px !important;
+        z-index: 999999 !important;
+        width: 72px !important;
+        height: 72px !important;
+        border-radius: 50% !important;
+        box-shadow: 0 8px 24px rgba(255, 107, 53, 0.25) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        background: linear-gradient(
+          135deg,
+          #ff6b35 0%,
+          #f7931e 100%
+        ) !important;
+        border: none !important;
+        cursor: pointer !important;
+        overflow: hidden !important;
+      }
+
+      .alphabeto-widget-button:hover {
+        transform: scale(1.1) translateY(-2px) !important;
+        box-shadow: 0 12px 32px rgba(255, 107, 53, 0.35) !important;
+      }
+
+      .alphabeto-widget-button:active {
+        transform: scale(1.05) !important;
+      }
+
+      .alphabeto-widget-button svg {
+        width: 36px !important;
+        height: 36px !important;
+        stroke: white !important;
+        stroke-width: 2 !important;
+        fill: none !important;
+      }
+
+      /* Pulse badge */
+      .alphabeto-pulse-badge {
+        position: absolute !important;
+        top: -4px !important;
+        right: -4px !important;
+        width: 14px !important;
+        height: 14px !important;
+        background: #22c55e !important;
+        border: 2px solid white !important;
+        border-radius: 50% !important;
+        animation: alphabeto-pulse 2s infinite !important;
+      }
+
+      @keyframes alphabeto-pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.8;
+          transform: scale(1.1);
+        }
+      }
+
+      /* Modal */
+      .alphabeto-widget-modal {
+        position: fixed !important;
+        right: 0 !important;
+        top: 0 !important;
+        height: 100% !important;
+        width: 100% !important;
+        max-width: 420px !important;
+        background: #fafafa !important;
+        box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12) !important;
+        z-index: 999999 !important;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        transform: translateX(100%) !important;
+      }
+
+      .alphabeto-widget-modal.open {
+        transform: translateX(0) !important;
+      }
+
+      /* Overlay */
+      .alphabeto-widget-overlay {
+        position: fixed !important;
+        inset: 0 !important;
+        background: rgba(0, 0, 0, 0.6) !important;
+        z-index: 999998 !important;
+        opacity: 0 !important;
+        transition: opacity 0.3s ease !important;
+        pointer-events: none !important;
+        backdrop-filter: blur(4px) !important;
+      }
+
+      .alphabeto-widget-overlay.show {
+        opacity: 1 !important;
+        pointer-events: auto !important;
+      }
+
+      /* Header */
+      .alphabeto-widget-header {
+        background: linear-gradient(
+          135deg,
+          #ff6b35 0%,
+          #f7931e 100%
+        ) !important;
+        color: white !important;
+        padding: 20px 24px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+      }
+
+      .alphabeto-widget-header-content {
+        display: flex !important;
+        align-items: center !important;
+        gap: 16px !important;
+      }
+
+      .alphabeto-widget-logo {
+        height: 32px !important;
+        width: auto !important;
+      }
+
+      .alphabeto-widget-title {
+        font-size: 18px !important;
+        font-weight: 600 !important;
+        opacity: 0.9 !important;
+      }
+
+      .alphabeto-widget-close {
+        background: rgba(255, 255, 255, 0.2) !important;
+        border: none !important;
+        color: white !important;
+        cursor: pointer !important;
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 8px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 20px !important;
+        transition: all 0.2s ease !important;
+        line-height: 1 !important;
+      }
+
+      .alphabeto-widget-close:hover {
+        background: rgba(255, 255, 255, 0.3) !important;
+      }
+
+      /* Content */
+      .alphabeto-widget-content {
+        flex: 1 !important;
+        overflow-y: auto !important;
+        padding: 24px !important;
+        background: #fafafa !important;
+      }
+
+      /* Títulos */
+      .alphabeto-widget-main-title {
+        font-size: 24px !important;
+        font-weight: 700 !important;
+        color: #1f2937 !important;
+        margin-bottom: 8px !important;
+        text-align: center !important;
+      }
+
+      .alphabeto-widget-subtitle {
+        color: #6b7280 !important;
+        font-size: 14px !important;
+        text-align: center !important;
+        margin-bottom: 32px !important;
+      }
+
+      /* Botões */
+      .alphabeto-btn-primary {
+        background: linear-gradient(
+          135deg,
+          #ff6b35 0%,
+          #f7931e 100%
+        ) !important;
+        color: white !important;
+        padding: 14px 24px !important;
+        border-radius: 12px !important;
+        font-weight: 600 !important;
+        transition: all 0.2s ease !important;
+        border: none !important;
+        cursor: pointer !important;
+        font-size: 16px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        width: 100% !important;
+        margin-bottom: 16px !important;
+      }
+
+      .alphabeto-btn-primary:hover {
+        transform: translateY(-1px) !important;
+        box-shadow: 0 8px 20px rgba(255, 107, 53, 0.25) !important;
+      }
+
+      .alphabeto-btn-primary:disabled {
+        opacity: 0.5 !important;
+        cursor: not-allowed !important;
+      }
+
+      .alphabeto-btn-secondary {
+        background: white !important;
+        color: #ff6b35 !important;
+        border: 2px solid #ff6b35 !important;
+        padding: 12px 24px !important;
+        border-radius: 12px !important;
+        font-weight: 600 !important;
+        transition: all 0.2s ease !important;
+        cursor: pointer !important;
+        font-size: 16px !important;
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+
+      .alphabeto-btn-secondary:hover {
+        background: #fff7f3 !important;
+        transform: translateY(-1px) !important;
+      }
+
+      .alphabeto-btn-sac {
+        background: white !important;
+        color: #8b5cf6 !important;
+        padding: 12px 20px !important;
+        border-radius: 12px !important;
+        font-weight: 600 !important;
+        transition: all 0.2s ease !important;
+        border: 2px solid #e9d5ff !important;
+        cursor: pointer !important;
+        font-size: 15px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        width: 100% !important;
+      }
+
+      .alphabeto-btn-sac:hover {
+        background: #faf5ff !important;
+        border-color: #c084fc !important;
+        transform: translateY(-1px) !important;
+      }
+
+      /* Input */
+      .alphabeto-search-input {
+        width: 100% !important;
+        padding: 14px 16px !important;
+        border: 2px solid #e5e7eb !important;
+        border-radius: 12px !important;
+        font-size: 16px !important;
+        transition: all 0.2s ease !important;
+        background: white !important;
+        margin-bottom: 12px !important;
+      }
+
+      .alphabeto-search-input:focus {
+        outline: none !important;
+        border-color: #ff6b35 !important;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1) !important;
+      }
+
+      /* Store cards */
+      .alphabeto-store-card {
+        border: 2px solid #f3f4f6 !important;
+        border-radius: 16px !important;
+        padding: 20px !important;
+        margin-bottom: 16px !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        background: white !important;
+        position: relative !important;
+        overflow: hidden !important;
+      }
+
+      .alphabeto-store-card:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+        border-color: #ffe5db !important;
+      }
+
+      .alphabeto-store-card.featured {
+        border-color: #ff6b35 !important;
+        background: linear-gradient(
+          135deg,
+          #fff7f3 0%,
+          #ffede6 100%
+        ) !important;
+        box-shadow: 0 4px 16px rgba(255, 107, 53, 0.1) !important;
+      }
+
+      .alphabeto-store-name {
+        font-weight: 600 !important;
+        margin-bottom: 6px !important;
+        color: #1f2937 !important;
+        font-size: 16px !important;
+      }
+
+      .alphabeto-store-location {
+        font-size: 14px !important;
+        color: #6b7280 !important;
+        margin-bottom: 4px !important;
+      }
+
+      .alphabeto-store-address {
+        font-size: 13px !important;
+        color: #9ca3af !important;
+      }
+
+      .alphabeto-store-badge {
+        display: inline-block !important;
+        background: #ff6b35 !important;
+        color: white !important;
+        font-size: 12px !important;
+        padding: 4px 12px !important;
+        border-radius: 20px !important;
+        margin-bottom: 12px !important;
+        font-weight: 600 !important;
+      }
+
+      .alphabeto-store-distance {
+        position: absolute !important;
+        top: 20px !important;
+        right: 20px !important;
+        background: #fff7f3 !important;
+        padding: 6px 12px !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        color: #ff6b35 !important;
+        font-size: 14px !important;
+      }
+
+      /* Loading */
+      .alphabeto-loading {
+        text-align: center !important;
+        padding: 60px 20px !important;
+      }
+
+      .alphabeto-spinner {
+        border: 3px solid #ffe5db !important;
+        border-top: 3px solid #ff6b35 !important;
+        border-radius: 50% !important;
+        width: 48px !important;
+        height: 48px !important;
+        animation: alphabeto-spin 1s linear infinite !important;
+        margin: 0 auto !important;
+      }
+
+      @keyframes alphabeto-spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Back button */
+      .alphabeto-back-btn {
+        color: #ff6b35 !important;
+        font-weight: 600 !important;
+        margin-bottom: 24px !important;
+        background: none !important;
+        border: none !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        font-size: 16px !important;
+        padding: 0 !important;
+      }
+
+      .alphabeto-back-btn svg {
+        width: 20px !important;
+        height: 20px !important;
+        stroke: currentColor !important;
+        stroke-width: 2 !important;
+        fill: none !important;
+      }
+
+      /* Divider */
+      .alphabeto-divider {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        margin: 20px 0 !important;
+        color: #9ca3af !important;
+      }
+
+      .alphabeto-divider-line {
+        flex: 1 !important;
+        height: 1px !important;
+        background: #e5e7eb !important;
+      }
+
+      .alphabeto-divider-text {
+        font-size: 14px !important;
+        font-weight: 500 !important;
+      }
+
+      /* SAC section */
+      .alphabeto-sac-section {
+        margin-top: 40px !important;
+        padding: 20px !important;
+        background: #faf5ff !important;
+        border-radius: 12px !important;
+        border: 1px solid #e9d5ff !important;
+      }
+
+      .alphabeto-sac-text {
+        font-size: 13px !important;
+        color: #7c3aed !important;
+        text-align: center !important;
+        margin-bottom: 12px !important;
+        font-weight: 500 !important;
+      }
+
+      /* Footer */
+      .alphabeto-footer {
+        padding: 16px 24px !important;
+        background: white !important;
+        border-top: 1px solid #e5e7eb !important;
+        text-align: center !important;
+      }
+
+      .alphabeto-footer-text {
+        font-size: 12px !important;
+        color: #9ca3af !important;
+      }
+
+      /* Responsividade */
+      @media (max-width: 640px) {
+        .alphabeto-widget-modal {
+          max-width: 100% !important;
+        }
+
+        .alphabeto-widget-button {
+          width: 64px !important;
+          height: 64px !important;
+          bottom: 20px !important;
+          right: 20px !important;
+        }
+
+        .alphabeto-widget-button svg {
+          width: 32px !important;
+          height: 32px !important;
+        }
+      }
+
+      @media (max-width: 375px) {
+        .alphabeto-widget-content {
+          padding: 20px !important;
+        }
+
+        .alphabeto-btn-primary,
+        .alphabeto-btn-secondary,
+        .alphabeto-btn-sac {
+          font-size: 14px !important;
+          padding: 12px 20px !important;
+        }
+      }
+
+      /* Scrollbar customizada */
+      .alphabeto-widget-content::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .alphabeto-widget-content::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+
+      .alphabeto-widget-content::-webkit-scrollbar-thumb {
+        background: #ff6b35;
+        border-radius: 4px;
+      }
+
+      .alphabeto-widget-content::-webkit-scrollbar-thumb:hover {
+        background: #f7931e;
+      }
+
+      /* Animações de entrada */
+      .alphabeto-fade-enter {
+        animation: alphabeto-slideUp 0.3s ease-out;
+      }
+
+      @keyframes alphabeto-slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="alphabeto-widget-root" class="alphabeto-widget-container"></div>
+
+    <script>
+      (function () {
+        "use strict";
+
+        // Versão do widget
+        var WIDGET_VERSION = "6.0.0";
+        console.log("Alphabeto Widget Version:", WIDGET_VERSION);
+
+        // Verificar se o widget já foi carregado
+        if (window.AlphabetoWidgetInstance) {
+          console.warn("Alphabeto Widget já está carregado");
+          return;
+        }
+
+        // Dados das lojas embarcados
+        var storesData = {
+          stores: [
+            {
+              id: 1,
+              name: "Alphabeto Campos Pelinca ",
+              address: "Av Pelinca 100 lojas 3 a 5",
+              city: "Campos dos Goytacazes",
+              state: "RJ",
+              cep: "28035-175",
+              whatsapp: "5522981289516",
+              lat: 21.0,
+              lng: 41.0,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 2,
+              name: "Alphabeto Rio Sul ",
+              address: "Av Lauro Sodré, 445 loja 301, Parte  C 21, Botafogo ",
+              city: "Rio de Janeiro ",
+              state: "RJ",
+              cep: 22290070,
+              whatsapp: "5521971247415",
+              lat: 2.0,
+              lng: 1.0,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 3,
+              name: "Alphabeto Nova América",
+              address:
+                "Av. pastor martin luther king Jr 126 loja 706 primeiro piso ao lado da rua do Rio",
+              city: "Rio de Janeiro",
+              state: "RJ",
+              cep: 20765000,
+              whatsapp: "5521996955142",
+              lat: -2.28776008091268e16,
+              lng: -4327136968576020.0,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 4,
+              name: "Alphabeto Salvador Shopping ",
+              address: "AV TANCREDO NEVES n 148",
+              city: "Salvador",
+              state: "BA",
+              cep: 41820020,
+              whatsapp: "5571996636656",
+              lat: -129879.0,
+              lng: -384781.0,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 5,
+              name: "Alphabeto Ibirapuera ",
+              address: "Av Ibirapuera 3103 loja120 piso Moema ",
+              city: "São Paulo ",
+              state: "SP",
+              cep: "04029-902",
+              whatsapp: "5511932888817",
+              lat: -23.5972,
+              lng: -46.6582,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 6,
+              name: "Alphabeto Shopping Barra Salvador",
+              address: "Avenida Centenário",
+              city: "Salvador",
+              state: "BA",
+              cep: 41140400,
+              whatsapp: "5571999963037",
+              lat: 13005692.0,
+              lng: 38523843.0,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 7,
+              name: "Alphabeto Salvador Shopping ",
+              address:
+                "Avenida Tancredo Neves Nº 3133, loja comercial 1188 L 1 Caminho das Árvores ",
+              city: "Salvador ",
+              state: "BA ",
+              cep: "41.820-810 ",
+              whatsapp: "5571996803770",
+              lat: -12.9781612,
+              lng: -12.9781612,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 8,
+              name: "Alphabeto Barra shopping ",
+              address: "Av das Américas, 4666 Loja 105 B",
+              city: "Rio de Janeiro",
+              state: "RJ ",
+              cep: 22640102,
+              whatsapp: "5521996628735",
+              lat: 2.29981933184503e16,
+              lng: 4335657163839300.0,
+              hours: "Segunda A Sábado 10H-22Hh Domingos E Feriados 13H-21Hh",
+            },
+            {
+              id: 9,
+              name: "Alphabeto Shopping Tijuca",
+              address: "Avenida Maracnã 987 loja 2038",
+              city: "Rio de Janeiro",
+              state: "RJ",
+              cep: 20511000,
+              whatsapp: "5521967809973",
+              lat: -2292191.0,
+              lng: -4323564.0,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 10,
+              name: "Alphabeto Shopping Morumbi",
+              address: "Avenida Roque Petroni Júnior, 1089\nloja 95-S",
+              city: "São Paulo",
+              state: "SP",
+              cep: "04707-900",
+              whatsapp: "1130402110",
+              lat: -2.36234904095345e16,
+              lng: -4670053859434570.0,
+              hours: "Seg-Sáb: 10H-22H | Dome Feriado : 14H-20H)",
+            },
+            {
+              id: 11,
+              name: "Alphabeto Teresina",
+              address:
+                "Av. Mar. Castelo Branco, 911 - Piso L3 - Porenquanto, Teresina - PI, 64003-087",
+              city: "Teresina",
+              state: "PI",
+              cep: 64003087,
+              whatsapp: "5586981161015",
+              lat: -507653.0,
+              lng: -4280231.0,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 12,
+              name: "Alphabeto Plaza Shopping Niterói",
+              address: "Rua Quinze de Novembro número 8 numero 202 L2",
+              city: "Niterói",
+              state: "RJ",
+              cep: 24020125,
+              whatsapp: "5521997487090",
+              lat: 2289623146756630.0,
+              lng: 4312394162114360.0,
+              hours:
+                "Seg-Sábunda A Sabado De 10H-22H / Dom: 15H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 13,
+              name: "Alphabeto Barra shopping ",
+              address: "AV DAS AMERICAS, 4666  LOJA 105B Barra da Tijuca",
+              city: "RIO DE JANEIRO",
+              state: "RJ",
+              cep: 22640102,
+              whatsapp: "5521996628735",
+              lat: 2.29981933184503e16,
+              lng: 433565713839304.0,
+              hours:
+                "Segunda A Sábado 10H-22Hh Domingos E Feriados 13:00 - 22 Feriados Aos Sábados Abre: 10H-22Hh",
+            },
+            {
+              id: 14,
+              name: "Alphabeto Icaraí",
+              address: "Rua Tavares de Macedo, 130",
+              city: "Niterói ",
+              state: "RJ",
+              cep: 24220211,
+              whatsapp: "5521995977783",
+              lat: -2290411.0,
+              lng: -4311177.0,
+              hours:
+                "9H-19H Seg A Sexta 9H-18H Sábados Domingos E Feriados Não Funcionamos",
+            },
+            {
+              id: 15,
+              name: "Alphabeto Gávea",
+              address: "Rua Marquês de São Vicente 52 loja 348",
+              city: "Rio de janeiro",
+              state: "RJ",
+              cep: "22451-041",
+              whatsapp: "5521999650465",
+              lat: 22.0,
+              lng: 22.0,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 16,
+              name: "Alphabeto Outlet Premium",
+              address: "Avenida Dona Tereza Cristina 2000, loja 1009",
+              city: "Duque de Caxias ",
+              state: "RJ",
+              cep: 26243620,
+              whatsapp: "5521971204814",
+              lat: 226903073.0,
+              lng: 432914850.0,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 17,
+              name: "Alphabeto Uberlandia",
+              address: "Av João Naves de Ávila, 1331 Loja 23",
+              city: "Uberlândia ",
+              state: "Minas Gerais",
+              cep: "38408-902",
+              whatsapp: "5534992116320",
+              lat: -1890910.0,
+              lng: -4826034.0,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 18,
+              name: "Alphabeto Shopping contagem ",
+              address:
+                "Avenida Severino Ballesteros Rodrigues  850 bairro Cabral ",
+              city: "Contagem ",
+              state: "Minas Gerais ",
+              cep: "32146_025",
+              whatsapp: "5531990850769",
+              lat: 1989656.0,
+              lng: 4404276.0,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 19,
+              name: "Alphabeto Shopping Paragem",
+              address:
+                "Avenida Professor Mário Werneck, 1.360, loja 128, Bairro Buritis, BH, MG, CEP: 30.455-610, Shopping Paragem",
+              city: "Belo Horizonte",
+              state: "MG",
+              cep: "30455-610",
+              whatsapp: "5531971369325",
+              lat: 0.0,
+              lng: 0.0,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 20,
+              name: "Alphabeto Boulevard Belem",
+              address: "Av Visconde de Souza Franco 776",
+              city: "Belem",
+              state: "PA",
+              cep: 66053000,
+              whatsapp: "5591985001515",
+              lat: -1.44707,
+              lng: -48.48801,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 21,
+              name: "Alphabeto Park Jacarepaguá",
+              address: "Estrada de Jacarepaguá, 6069 Loja 148 B - Anil",
+              city: "Rio de Janeiro",
+              state: "RJ",
+              cep: 22753033,
+              whatsapp: "5521983510023",
+              lat: -2.29560559962008e16,
+              lng: -4333733770433510.0,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 22,
+              name: "Alphabeto Indepêndencia",
+              address:
+                "Avenida Presidente Itamar Franco 3600 , loja 129. Independência Shopping ",
+              city: "Juiz de Fora",
+              state: "MG",
+              cep: 36033318,
+              whatsapp: "5532988387764",
+              lat: 21.78081,
+              lng: 21.78081,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 23,
+              name: "Alphabeto Indaiatuba",
+              address: "Av. Presidente Kennedy, 230",
+              city: "Indaiatuba",
+              state: "SP",
+              cep: 13331488,
+              whatsapp: "5519996312955",
+              lat: -2307969.0,
+              lng: -4721186.0,
+              hours: "Seg-Sáb A Sexta: 9H-19H / Sab: 9H-14H Dom: Fechado",
+            },
+            {
+              id: 24,
+              name: "Alphabeto Shopping Del Rey",
+              address: "Avenida Carlos Luz,3000 - Loja 3056-Bairro:Caiçaras ",
+              city: "Belo Horizonte ",
+              state: "MG",
+              cep: "31250-010.   ",
+              whatsapp: "5531983350101",
+              lat: -19890415.0,
+              lng: -43967998.0,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 25,
+              name: "Alphabeto Via Shopping",
+              address:
+                "Avenida Afonso Vaz de Melo 640 loja 223 piso 2  lado A,  Barreiro ",
+              city: "Belo Horizonte ",
+              state: "Minas Gerais ",
+              cep: 30640070,
+              whatsapp: "3132342805",
+              lat: -19.9743795,
+              lng: -19.9743795,
+              hours: "Seg-Sáb A Sab 10 - 22 / Dom 14 - 20",
+            },
+            {
+              id: 26,
+              name: "Alphabeto Betim",
+              address: "Rod. Fernão Dias, 601 - Km 492 - São João, Betim - MG",
+              city: "Betim",
+              state: "Mg",
+              cep: " 32655-505",
+              whatsapp: "5553189875277",
+              lat: -19.96101,
+              lng: -44.15906,
+              hours: "10 - 22 Seg-Sáb A Sabado 14 - 20 Dom",
+            },
+            {
+              id: 27,
+              name: "Alphabeto Goiabeiras ",
+              address:
+                "O endereço do Goiabeiras Shopping é Avenida José Monteiro de Figueiredo, 500, Duque de Caxias, Cuiabá, Mato Grosso, Brasil, CEP 78043-900, ",
+              city: "Cuiabá ",
+              state: "MT",
+              cep: 78043900,
+              whatsapp: "5565996231215",
+              lat: -15.587866,
+              lng: -15.587866,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 28,
+              name: "Alphabeto Macaé ",
+              address: "Avenida Rui Barbosa 674 loja B",
+              city: "Macaé ",
+              state: "RJ",
+              cep: 27910362,
+              whatsapp: "5522997136124",
+              lat: -22.376048,
+              lng: -41.777468,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 29,
+              name: "Alphabeto Santo André",
+              address: "Avenida Industrial, 600, loja 559, Campestre",
+              city: "Santo André",
+              state: "SP",
+              cep: "09080-501",
+              whatsapp: "5511997937700",
+              lat: -23648821.0,
+              lng: -46532188.0,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 30,
+              name: "Alphabeto Manauara Shopping",
+              address: "Av. Mario Ypiranga, 1300  - Adrianópolis",
+              city: "Manaus",
+              state: "Am",
+              cep: 69057002,
+              whatsapp: "5592981437959",
+              lat: -3.1026,
+              lng: -60.01361,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 31,
+              name: "Alphabeto Shopping Campo Grande",
+              address:
+                "Avenida Afonso Pena, 4909\nShopping Campo Grande - 2piso",
+              city: "Campo Grande ",
+              state: "MS",
+              cep: "79040-010",
+              whatsapp: "",
+              lat: -20457644.0,
+              lng: -54587903.0,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              id: 32,
+              name: "Alphabeto River Shopping",
+              address: "Avenida Monsenhor Ângelo Sampaio,100 - loja 26",
+              city: "Petrolina",
+              state: "PE",
+              cep: 56305920,
+              whatsapp: "5587988436788",
+              lat: -9387684217528460.0,
+              lng: -4048917563195800.0,
+              hours: "(Seg-Sáb; 10H-22H / Dom: 12H-21H) | Dom: 12H-21H",
+            },
+            {
+              id: 33,
+              name: "Alphabeto Montes Claros",
+              address: "Av. Donato Quintino, nº90 - bairro Cidade Nova",
+              city: "Montes Claros",
+              state: "Minas Gerais",
+              cep: 39400546,
+              whatsapp: "5538992410038",
+              lat: -16.741556154380255,
+              lng: -16.741556154380255,
+              hours: "Seg - Sáb: 10H-22H / Dom: 14H-20H | Dom: 12H-21H",
+            },
+            {
+              id: 34,
+              name: "Alphabeto Porto Velho Shopping",
+              address:
+                "Av. Prefeito Chiquilito Erse, n. 3288, bairro Flodoaldo Pontes Pinto, Porto Velho Shopping",
+              city: "Porto Velho",
+              state: "RO",
+              cep: "76820-408",
+              whatsapp: "5569999798769",
+              lat: -874787620675066.0,
+              lng: 6.38763244056198e16,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+            },
+            {
+              name: "Alphabeto Bangu Shopping",
+              address: "RuaFonseca, 240 - lj 121L - Bangu",
+              city: "Rio de Janeiro",
+              state: "RJ",
+              cep: "21820-005",
+              whatsapp: "5521981320362",
+              lat: -22.8786176,
+              lng: -43.4536448,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+              id: 35,
+            },
+            {
+              name: "Alphabeto Parque Shopping Sulacap",
+              address: "Av. Marechal Fontenele, 3545 - LOJA 191 - Realengo",
+              city: "Rio de Janeiro",
+              state: "RJ",
+              cep: "21750-000",
+              whatsapp: "5521981320362",
+              lat: -22.8860504,
+              lng: -43.4076426,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+              id: 36,
+            },
+            {
+              name: "Alphabeto Park Jacarepagua",
+              address: "Estr. de Jacarepaguá, 6069 - Jacarepaguá",
+              city: "Rio de Janeiro",
+              state: "RJ",
+              cep: "22753-038",
+              whatsapp: "5521983510023",
+              lat: null,
+              lng: null,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+              id: 37,
+            },
+            {
+              name: "Alphabeto Tijuca Shopping 45",
+              address: "Rua Soares da Costa n°10 loja 10C - Tijuca",
+              city: "Rio de Janeiro",
+              state: "RJ",
+              cep: "20520-100",
+              whatsapp: "5521979961894",
+              lat: -22.9249419,
+              lng: -43.2345614,
+              hours: "Seg-Sex: 9H-19H | Sáb: 9H-16H | Dom: 12H-21H",
+              id: 38,
+            },
+            {
+              name: "Alphabeto Shopping Boulevard Rio",
+              address:
+                "R. Barão de São Francisco, 236 - Shops 247 / 248 - Vila Isabel",
+              city: "Rio de Janeiro",
+              state: "RJ",
+              cep: "20560-030",
+              whatsapp: "5521995547399",
+              lat: -22.9191568,
+              lng: -43.2504734,
+              hours: "Seg-Sáb: 10H-22H | Dom: 12H-21H | Dom: 12H-21H",
+              id: 39,
+            },
+          ],
+          sac: {
+            name: "Fadinhas do SAC",
+            whatsapp: "5521999422795",
+            message:
+              "Olá! Gostaria de falar com as Fadinhas do SAC da Alphabeto! 🧚‍♀️",
+          },
+        };
+
+        // Widget principal
+        function AlphabetoWidget() {
+          this.version = WIDGET_VERSION;
+          this.isOpen = false;
+          this.currentView = "menu";
+          this.stores = storesData.stores;
+          this.sacInfo = storesData.sac;
+          this.nearbyStores = [];
+          this.isLoading = false;
+          this.storesLoaded = true;
+
+          this.init();
+        }
+
+        AlphabetoWidget.prototype.init = function () {
+          if (document.getElementById("alphabeto-widget-main")) {
+            return; // Widget já existe
+          }
+
+          this.createWidget();
+          this.attachEventListeners();
+          console.log(
+            "Alphabeto Widget: Pronto com",
+            this.stores.length,
+            "lojas!"
+          );
+        };
+
+        AlphabetoWidget.prototype.createWidget = function () {
+          var container = document.getElementById("alphabeto-widget-root");
+
+          container.innerHTML = `
+                    <div id="alphabeto-widget-main">
+                        <!-- Botão flutuante -->
+                        <button class="alphabeto-widget-button" id="alphabeto-toggle-btn">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M3 21h18M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4M5 21V10.85M19 21V10.85"/>
+                            </svg>
+                            <div class="alphabeto-pulse-badge"></div>
+                        </button>
+
+                        <!-- Modal -->
+                        <div class="alphabeto-widget-modal" id="alphabeto-modal">
+                            <!-- Header -->
+                            <div class="alphabeto-widget-header">
+                                <div class="alphabeto-widget-header-content">
+                                    <svg width="120" height="32" viewBox="0 0 120 32" fill="white">
+                                        <text x="5" y="22" font-family="Arial, sans-serif" font-size="18" font-weight="bold">Alphabeto</text>
+                                    </svg>
+                                    <span class="alphabeto-widget-title">Lojas</span>
+                                </div>
+                                <button class="alphabeto-widget-close" id="alphabeto-close-btn">✕</button>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="alphabeto-widget-content" id="alphabeto-content">
+                                ${this.renderMainMenu()}
+                            </div>
+
+                            <!-- Footer -->
+                            <div class="alphabeto-footer">
+                                <p class="alphabeto-footer-text">© 2025 Alphabeto - Vestindo criança como criança</p>
+                            </div>
+                        </div>
+
+                        <!-- Overlay -->
+                        <div class="alphabeto-widget-overlay" id="alphabeto-overlay"></div>
+                    </div>
+                `;
+        };
+
+        AlphabetoWidget.prototype.renderMainMenu = function () {
+          var self = this;
+          return `
+                    <div class="alphabeto-fade-enter">
+                        <h3 class="alphabeto-widget-main-title">Encontre a loja mais próxima</h3>
+                        <p class="alphabeto-widget-subtitle">Mais de ${
+                          this.stores.length
+                        } lojas em todo Brasil</p>
+                        
+                        <button class="alphabeto-btn-primary" id="alphabeto-geolocation-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24">
+                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                                <circle cx="12" cy="9" r="3"/>
+                            </svg>
+                            Usar minha localização atual
+                        </button>
+
+                        <div class="alphabeto-divider">
+                            <div class="alphabeto-divider-line"></div>
+                            <span class="alphabeto-divider-text">ou</span>
+                            <div class="alphabeto-divider-line"></div>
+                        </div>
+                        
+                        <input type="text" placeholder="Digite sua cidade, CEP ou endereço..." 
+                               class="alphabeto-search-input" id="alphabeto-search-input">
+                        
+                        <button class="alphabeto-btn-secondary" id="alphabeto-search-btn">
+                            🔍 Buscar lojas
+                        </button>
+
+                        ${
+                          this.sacInfo
+                            ? `
+                            <div class="alphabeto-sac-section">
+                                <p class="alphabeto-sac-text">💬 Precisa de ajuda ou tem alguma dúvida?</p>
+                                <button class="alphabeto-btn-sac" id="alphabeto-sac-btn">
+                                    <span style="font-size: 18px;">🧚‍♀️</span>
+                                    Falar com as Fadinhas do SAC
+                                </button>
+                            </div>
+                        `
+                            : ""
+                        }
+
+                        <div style="margin-top: 32px;">
+                            <h4 style="font-size: 18px; font-weight: 600; margin-bottom: 20px; color: #374151;">
+                                Nossas lojas
+                            </h4>
+                            ${this.stores
+                              .slice(0, 10)
+                              .map(function (store) {
+                                return `
+                                    <div class="alphabeto-store-card" data-store-id="${
+                                      store.id
+                                    }">
+                                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                                            <div style="flex: 1;">
+                                                <h5 class="alphabeto-store-name">${
+                                                  store.name
+                                                }</h5>
+                                                <p class="alphabeto-store-location">📍 ${
+                                                  store.city
+                                                }, ${store.state}</p>
+                                                <p class="alphabeto-store-address">${
+                                                  store.address
+                                                }</p>
+                                                ${
+                                                  store.cep
+                                                    ? `<p style="font-size: 12px; color: #9CA3AF; margin-top: 4px;">CEP: ${store.cep}</p>`
+                                                    : ""
+                                                }
+                                            </div>
+                                            <div style="color: #22C55E; font-size: 24px;">💬</div>
+                                        </div>
+                                    </div>
+                                `;
+                              })
+                              .join("")}
+                            
+                            ${
+                              this.stores.length > 10
+                                ? `
+                                <p style="text-align: center; color: #9CA3AF; font-size: 14px; margin-top: 20px;">
+                                    Mostrando 10 de ${this.stores.length} lojas
+                                </p>
+                            `
+                                : ""
+                            }
+                        </div>
+                    </div>
+                `;
+        };
+
+        AlphabetoWidget.prototype.renderLoading = function () {
+          return `
+                    <div class="alphabeto-loading alphabeto-fade-enter">
+                        <div class="alphabeto-spinner"></div>
+                        <p style="margin-top: 24px; color: #6B7280; font-size: 16px;">
+                            Buscando lojas próximas...
+                        </p>
+                    </div>
+                `;
+        };
+
+        AlphabetoWidget.prototype.renderResults = function () {
+          var self = this;
+          return `
+                    <div class="alphabeto-fade-enter">
+                        <button class="alphabeto-back-btn" id="alphabeto-back-btn">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M19 12H5M12 19l-7-7 7-7"/>
+                            </svg>
+                            Voltar
+                        </button>
+                        
+                        <div style="margin-bottom: 24px;">
+                            <h3 class="alphabeto-widget-main-title">Lojas encontradas</h3>
+                            <p class="alphabeto-widget-subtitle">
+                                ${this.nearbyStores.length} ${
+            this.nearbyStores.length === 1
+              ? "loja encontrada"
+              : "lojas encontradas"
+          }, ordenadas por proximidade
+                            </p>
+                        </div>
+                        
+                        ${
+                          this.nearbyStores.length === 0
+                            ? `
+                            <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 16px; border: 2px dashed #E5E7EB;">
+                                <div style="font-size: 64px; margin-bottom: 20px;">🔍</div>
+                                <h3 style="font-size: 20px; font-weight: 600; margin-bottom: 12px; color: #374151;">
+                                    Nenhuma loja encontrada
+                                </h3>
+                                <p style="color: #6B7280; font-size: 14px;">
+                                    Tente buscar por outra localização ou entre em contato com o SAC
+                                </p>
+                            </div>
+                        `
+                            : this.nearbyStores
+                                .map(function (store, index) {
+                                  var isFeatured =
+                                    index === 0 && store.distance < 50;
+                                  return `
+                                <div class="alphabeto-store-card ${
+                                  isFeatured ? "featured" : ""
+                                }" data-store-id="${store.id}">
+                                    ${
+                                      isFeatured
+                                        ? `
+                                        <span class="alphabeto-store-badge">⭐ Mais próxima</span>
+                                    `
+                                        : ""
+                                    }
+                                    
+                                    <div class="alphabeto-store-distance">
+                                        ${store.distance.toFixed(1)} km
+                                    </div>
+                                    
+                                    <h5 class="alphabeto-store-name" style="padding-right: 80px;">${
+                                      store.name
+                                    }</h5>
+                                    <p class="alphabeto-store-location">📍 ${
+                                      store.city
+                                    }, ${store.state}</p>
+                                    <p class="alphabeto-store-address" style="margin-bottom: 8px;">${
+                                      store.address
+                                    }</p>
+                                    ${
+                                      store.cep
+                                        ? `<p style="font-size: 12px; color: #9CA3AF; margin-bottom: 8px;">CEP: ${store.cep}</p>`
+                                        : ""
+                                    }
+                                    ${
+                                      store.hours
+                                        ? `<p style="font-size: 13px; color: #6B7280; margin-bottom: 12px;">⏰ ${
+                                            store.hours.split("|")[0]
+                                          }</p>`
+                                        : ""
+                                    }
+                                    
+                                    <div style="display: flex; align-items: center; gap: 8px; color: #22C55E; font-size: 14px; font-weight: 600;">
+                                        💬 Conversar no WhatsApp
+                                    </div>
+                                </div>
+                            `;
+                                })
+                                .join("")
+                        }
+                    </div>
+                `;
+        };
+
+        AlphabetoWidget.prototype.updateContent = function () {
+          var content = document.getElementById("alphabeto-content");
+          if (!content) return;
+
+          var html = "";
+          switch (this.currentView) {
+            case "loading":
+              html = this.renderLoading();
+              break;
+            case "results":
+              html = this.renderResults();
+              break;
+            default:
+              html = this.renderMainMenu();
+          }
+
+          content.innerHTML = html;
+          this.attachCurrentViewListeners();
+        };
+
+        AlphabetoWidget.prototype.attachEventListeners = function () {
+          var self = this;
+
+          var toggleBtn = document.getElementById("alphabeto-toggle-btn");
+          var closeBtn = document.getElementById("alphabeto-close-btn");
+          var overlay = document.getElementById("alphabeto-overlay");
+
+          if (toggleBtn) {
+            toggleBtn.addEventListener("click", function () {
+              self.openModal();
+            });
+          }
+
+          if (closeBtn) {
+            closeBtn.addEventListener("click", function () {
+              self.closeModal();
+            });
+          }
+
+          if (overlay) {
+            overlay.addEventListener("click", function () {
+              self.closeModal();
+            });
+          }
+
+          this.attachCurrentViewListeners();
+        };
+
+        AlphabetoWidget.prototype.attachCurrentViewListeners = function () {
+          var self = this;
+
+          if (this.currentView === "menu") {
+            this.attachMenuListeners();
+          } else if (this.currentView === "results") {
+            this.attachResultsListeners();
+          }
+        };
+
+        AlphabetoWidget.prototype.attachMenuListeners = function () {
+          var self = this;
+
+          var geoBtn = document.getElementById("alphabeto-geolocation-btn");
+          var searchBtn = document.getElementById("alphabeto-search-btn");
+          var searchInput = document.getElementById("alphabeto-search-input");
+          var sacBtn = document.getElementById("alphabeto-sac-btn");
+
+          if (geoBtn) {
+            geoBtn.addEventListener("click", function () {
+              self.useGeolocation();
+            });
+          }
+
+          if (searchBtn) {
+            searchBtn.addEventListener("click", function () {
+              self.searchByAddress();
+            });
+          }
+
+          if (searchInput) {
+            searchInput.addEventListener("keypress", function (e) {
+              if (e.key === "Enter") {
+                self.searchByAddress();
+              }
+            });
+          }
+
+          if (sacBtn && this.sacInfo) {
+            sacBtn.addEventListener("click", function () {
+              self.openSACWhatsApp();
+            });
+          }
+
+          this.attachStoreClicks();
+        };
+
+        AlphabetoWidget.prototype.attachResultsListeners = function () {
+          var self = this;
+
+          var backBtn = document.getElementById("alphabeto-back-btn");
+
+          if (backBtn) {
+            backBtn.addEventListener("click", function () {
+              self.currentView = "menu";
+              self.updateContent();
+            });
+          }
+
+          this.attachStoreClicks();
+        };
+
+        AlphabetoWidget.prototype.attachStoreClicks = function () {
+          var self = this;
+          var storeCards = document.querySelectorAll(".alphabeto-store-card");
+
+          storeCards.forEach(function (card) {
+            card.addEventListener("click", function () {
+              var storeId = parseInt(card.getAttribute("data-store-id"));
+              var store = self.getStoreById(storeId);
+              if (store) {
+                self.openWhatsApp(store);
+              }
+            });
+          });
+        };
+
+        AlphabetoWidget.prototype.getStoreById = function (id) {
+          var store = this.stores.find(function (s) {
+            return s.id === id;
+          });
+          if (!store) {
+            store = this.nearbyStores.find(function (s) {
+              return s.id === id;
+            });
+          }
+          return store;
+        };
+
+        AlphabetoWidget.prototype.openModal = function () {
+          this.isOpen = true;
+          var modal = document.getElementById("alphabeto-modal");
+          var overlay = document.getElementById("alphabeto-overlay");
+
+          if (modal) modal.classList.add("open");
+          if (overlay && window.innerWidth <= 640)
+            overlay.classList.add("show");
+        };
+
+        AlphabetoWidget.prototype.closeModal = function () {
+          var self = this;
+          this.isOpen = false;
+          var modal = document.getElementById("alphabeto-modal");
+          var overlay = document.getElementById("alphabeto-overlay");
+
+          if (modal) modal.classList.remove("open");
+          if (overlay) overlay.classList.remove("show");
+
+          // Reset após animação
+          setTimeout(function () {
+            if (!self.isOpen) {
+              self.currentView = "menu";
+              self.nearbyStores = [];
+              var searchInput = document.getElementById(
+                "alphabeto-search-input"
+              );
+              if (searchInput) searchInput.value = "";
+              self.updateContent();
+            }
+          }, 300);
+        };
+
+        AlphabetoWidget.prototype.useGeolocation = function () {
+          var self = this;
+
+          if (!navigator.geolocation) {
+            alert("Seu navegador não suporta geolocalização");
+            return;
+          }
+
+          this.isLoading = true;
+          this.currentView = "loading";
+          this.updateContent();
+
+          navigator.geolocation.getCurrentPosition(
+            function (position) {
+              self.handleLocationSuccess(
+                position.coords.latitude,
+                position.coords.longitude
+              );
+            },
+            function (error) {
+              var message = "Não foi possível obter sua localização.";
+              if (error.code === 1) {
+                message =
+                  "Permissão de localização negada. Por favor, digite seu endereço.";
+              } else if (error.code === 2) {
+                message =
+                  "Localização indisponível. Verifique se o GPS está ativado.";
+              } else if (error.code === 3) {
+                message =
+                  "Tempo esgotado. Tente novamente ou digite seu endereço.";
+              }
+              alert(message);
+              self.currentView = "menu";
+              self.updateContent();
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+          );
+        };
+
+        AlphabetoWidget.prototype.searchByAddress = function () {
+          var searchInput = document.getElementById("alphabeto-search-input");
+          var address = searchInput ? searchInput.value.trim() : "";
+
+          if (!address) {
+            alert("Por favor, digite um endereço, cidade ou CEP");
+            return;
+          }
+
+          this.isLoading = true;
+          this.currentView = "loading";
+          this.updateContent();
+
+          if (this.isCEP(address)) {
+            this.searchViaCEP(address).then(
+              function (viacepAddress) {
+                var searchAddress = viacepAddress || address + ", Brasil";
+                this.geocodeAddress(searchAddress);
+              }.bind(this)
+            );
+          } else {
+            this.geocodeAddress(address + ", Brasil");
+          }
+        };
+
+        AlphabetoWidget.prototype.searchViaCEP = function (cep) {
+          var cleanCep = cep.replace(/\D/g, "");
+
+          return fetch("https://viacep.com.br/ws/" + cleanCep + "/json/")
+            .then(function (response) {
+              return response.json();
+            })
+            .then(function (data) {
+              if (!data.erro) {
+                return (
+                  data.logradouro +
+                  ", " +
+                  data.localidade +
+                  ", " +
+                  data.uf +
+                  ", Brasil"
+                );
+              }
+              return null;
+            })
+            .catch(function () {
+              return null;
+            });
+        };
+
+        AlphabetoWidget.prototype.geocodeAddress = function (searchAddress) {
+          var self = this;
+
+          fetch(
+            "https://nominatim.openstreetmap.org/search?format=json&q=" +
+              encodeURIComponent(searchAddress) +
+              "&countrycodes=br&limit=1"
+          )
+            .then(function (response) {
+              return response.json();
+            })
+            .then(function (data) {
+              if (data && data[0]) {
+                var lat = parseFloat(data[0].lat);
+                var lng = parseFloat(data[0].lon);
+                self.handleLocationSuccess(lat, lng);
+              } else {
+                throw new Error("Endereço não encontrado");
+              }
+            })
+            .catch(function () {
+              alert("Endereço não encontrado. Tente ser mais específico.");
+              self.currentView = "menu";
+              self.updateContent();
+            });
+        };
+
+        AlphabetoWidget.prototype.handleLocationSuccess = function (lat, lng) {
+          var self = this;
+
+          var storesWithDistance = this.stores
+            .map(function (store) {
+              var storeCopy = Object.assign({}, store);
+              storeCopy.distance = self.calculateDistance(
+                lat,
+                lng,
+                store.lat,
+                store.lng
+              );
+              return storeCopy;
+            })
+            .sort(function (a, b) {
+              return a.distance - b.distance;
+            });
+
+          this.nearbyStores = storesWithDistance;
+          this.currentView = "results";
+          this.isLoading = false;
+          this.updateContent();
+        };
+
+        AlphabetoWidget.prototype.calculateDistance = function (
+          lat1,
+          lng1,
+          lat2,
+          lng2
+        ) {
+          var R = 6371; // Raio da Terra em km
+          var dLat = ((lat2 - lat1) * Math.PI) / 180;
+          var dLng = ((lng2 - lng1) * Math.PI) / 180;
+          var a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos((lat1 * Math.PI) / 180) *
+              Math.cos((lat2 * Math.PI) / 180) *
+              Math.sin(dLng / 2) *
+              Math.sin(dLng / 2);
+          var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          return R * c;
+        };
+
+        AlphabetoWidget.prototype.isCEP = function (value) {
+          var cleaned = value.replace(/\D/g, "");
+          return cleaned.length === 8 && /^\d{8}$/.test(cleaned);
+        };
+
+        AlphabetoWidget.prototype.openWhatsApp = function (store) {
+          var now = new Date();
+          var hour = now.getHours();
+
+          var greeting = "Olá!";
+          if (hour < 12) greeting = "Bom dia!";
+          else if (hour < 18) greeting = "Boa tarde!";
+          else greeting = "Boa noite!";
+
+          var message =
+            greeting +
+            " 👶\n\nGostaria de mais informações sobre a " +
+            store.name +
+            "!\n\nEndereço: " +
+            store.address;
+          var whatsappUrl =
+            "https://wa.me/" +
+            store.whatsapp +
+            "?text=" +
+            encodeURIComponent(message);
+
+          window.open(whatsappUrl, "_blank");
+        };
+
+        AlphabetoWidget.prototype.openSACWhatsApp = function () {
+          if (!this.sacInfo) return;
+
+          var whatsappUrl =
+            "https://wa.me/" +
+            this.sacInfo.whatsapp +
+            "?text=" +
+            encodeURIComponent(this.sacInfo.message);
+          window.open(whatsappUrl, "_blank");
+        };
+
+        // Inicializar widget quando DOM estiver pronto
+        function initWidget() {
+          // Verificar se o widget já foi inicializado
+          if (window.AlphabetoWidgetInstance) {
+            return;
+          }
+
+          // Aguardar o DOM estar completamente carregado
+          if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", function () {
+              window.AlphabetoWidgetInstance = new AlphabetoWidget();
+            });
+          } else {
+            window.AlphabetoWidgetInstance = new AlphabetoWidget();
+          }
+        }
+
+        // Auto-inicializar
+        initWidget();
+      })();
+    </script>
+  </body>
+</html>
