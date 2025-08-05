@@ -3,7 +3,6 @@
   Access-Control-Allow-Methods: GET, OPTIONS
   Access-Control-Allow-Headers: Content-Type
 
-
 /widget.js
   Cache-Control: no-cache, no-store, must-revalidate
   Pragma: no-cache
@@ -11,4 +10,9 @@
 
 /stores.json
   Cache-Control: no-cache, no-store, must-revalidate
-  Access-Control-Allow-Origin: *  
+  Access-Control-Allow-Origin: *
+
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Expires: 0
